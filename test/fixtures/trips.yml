@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user_id: 1
+  location_id: 1
+  departure_time: 2024-03-06 16:36:18
+  estimated_return_time: 2024-03-06 16:36:18
+  details: MyText
+  safety_score: 1
+  sunrise_time: 2024-03-06 16:36:18
+  sunset_time: 2024-03-06 16:36:18
+
+two:
+  user_id: 1
+  location_id: 1
+  departure_time: 2024-03-06 16:36:18
+  estimated_return_time: 2024-03-06 16:36:18
+  details: MyText
+  safety_score: 1
+  sunrise_time: 2024-03-06 16:36:18
+  sunset_time: 2024-03-06 16:36:18
