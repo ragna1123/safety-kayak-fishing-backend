@@ -1,0 +1,2 @@
+class TripWeather < ApplicationRecord
+end

@@ -1,0 +1,2 @@
+class TripReturn < ApplicationRecord
+end
