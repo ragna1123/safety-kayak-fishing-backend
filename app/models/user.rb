@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 class User < ApplicationRecord
   validates :username, presence: true
   validates :email, presence: true, uniqueness: true
-  validates :profile_image_url, allow_nil: true
   has_secure_password
-  VALID_PASSWORD_REGEX = /\A[\w\-]+\z/
+  VALID_PASSWORD_REGEX = /\A[\w-]+\z/
   validates :password, presence: true,
                        length: { minimum: 6 },
                        format: {

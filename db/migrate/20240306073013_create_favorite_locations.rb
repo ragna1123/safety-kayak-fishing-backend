@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 class CreateFavoriteLocations < ActiveRecord::Migration[7.1]
   def change
     create_table :favorite_locations do |t|
       t.integer :user_id, null: false
       t.integer :location_id, null: false
       t.string :name, null: false
-      t.string :description,  null: true
+      t.string :description, null: true
 
       t.timestamps
     end
