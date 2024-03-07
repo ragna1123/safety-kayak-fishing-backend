@@ -2,5 +2,5 @@
 
 class TripWeather < ApplicationRecord
   validates :trip_id, presence: true
-  validates :weather_data, presence: true
+  validates :weather_data_id, presence: true
 end

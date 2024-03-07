@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class WeatherDatumTest < ActiveSupport::TestCase
+class WeatherDataTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

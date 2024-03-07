@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class WeatherDatum < ApplicationRecord
+class WeatherData < ApplicationRecord
   validates :weather_condition, presence: true
   validates :timestamp, presence: true
   validates :temperature, presence: true
