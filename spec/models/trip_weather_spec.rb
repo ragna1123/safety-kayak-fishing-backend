@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe TripWeather, type: :model do
@@ -19,5 +21,3 @@ RSpec.describe TripWeather, type: :model do
     expect(trip_weather).to be_valid
   end
 end
-
-
