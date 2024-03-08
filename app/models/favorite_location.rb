@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class FavoriteLocation < ApplicationRecord
   validates :user_id, presence: true
   validates :location_id, presence: true
   validates :name, presence: true
-  validates :description, allow_nil: true,length: {maximum: 255}
+  validates :description, length: { maximum: 255 }
 end
