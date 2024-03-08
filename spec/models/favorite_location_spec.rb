@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe FavoriteLocation, type: :model do
@@ -22,13 +24,15 @@ RSpec.describe FavoriteLocation, type: :model do
   # descriptionの長さをテスト
   it 'descriptionが256文字以上の場合は無効であること' do
     long_description = 'a' * 256
-    favorite_location = FavoriteLocation.new(user_id: 1, location_id: 1, name: 'お気に入りの場所', description: long_description)
+    favorite_location = FavoriteLocation.new(user_id: 1, location_id: 1, name: 'お気に入りの場所',
+                                             description: long_description)
     expect(favorite_location).not_to be_valid
   end
 
   it 'descriptionが255文字以下の場合は有効であること' do
     short_description = 'a' * 255
-    favorite_location = FavoriteLocation.new(user_id: 1, location_id: 1, name: 'お気に入りの場所', description: short_description)
+    favorite_location = FavoriteLocation.new(user_id: 1, location_id: 1, name: 'お気に入りの場所',
+                                             description: short_description)
     expect(favorite_location).to be_valid
   end
 end
