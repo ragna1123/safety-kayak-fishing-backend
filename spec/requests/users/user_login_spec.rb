@@ -5,7 +5,7 @@ RSpec.describe 'ユーザーログイン', type: :request do
     {
       user: {
         email: 'test@example.com',
-        password: 'password123',
+        password: 'password123'
       }
     }
   end
@@ -13,7 +13,8 @@ RSpec.describe 'ユーザーログイン', type: :request do
   describe 'POST /api/users/login' do
     before do
       # ユーザーを作成する
-      User.create!(username:'testuser', email: 'test@example.com', password: 'password123', password_confirmation: 'password123')
+      User.create!(username: 'testuser', email: 'test@example.com', password: 'password123',
+                   password_confirmation: 'password123')
     end
 
     context 'パラメータが正しい場合' do
@@ -28,7 +29,7 @@ RSpec.describe 'ユーザーログイン', type: :request do
 
     context 'パラメータが正しくない場合' do
       before do
-        post '/api/users/login', params: { user:{email: 'testexample.com', password: 'password123'} }
+        post '/api/users/login', params: { user: { email: 'testexample.com', password: 'password123' } }
       end
 
       it 'ログインに失敗' do
@@ -43,7 +44,7 @@ RSpec.describe 'ユーザーログイン', type: :request do
 
     context '存在しないユーザーの場合' do
       before do
-        post '/api/users/login', params: { user:{email: 'nonexistent@example.com', password: 'password123'} }
+        post '/api/users/login', params: { user: { email: 'nonexistent@example.com', password: 'password123' } }
       end
 
       it 'ログインに失敗' do
@@ -58,7 +59,7 @@ RSpec.describe 'ユーザーログイン', type: :request do
 
     context 'パスワードが正しくない場合' do
       before do
-        post '/api/users/login', params: { user:{email: 'test@example.com', password: 'invalidpassword'} }
+        post '/api/users/login', params: { user: { email: 'test@example.com', password: 'invalidpassword' } }
       end
 
       it 'ログインに失敗' do
@@ -72,6 +73,3 @@ RSpec.describe 'ユーザーログイン', type: :request do
     end
   end
 end
-
-
-

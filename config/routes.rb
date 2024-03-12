@@ -12,5 +12,8 @@ Rails.application.routes.draw do
         delete '/', action: :destroy # ユーザー情報削除
       end
     end
+    # trips routes
+    # resources :trips, only: %i[index show create update destroy] do
+    # end
   end
 end

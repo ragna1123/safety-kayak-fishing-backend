@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
-  before_action :jwt_authenticate, only: [:show, :update, :destroy]
-  
+  before_action :jwt_authenticate, only: %i[show update destroy]
+
   def create
     user = User.new(user_params)
     if user.save
@@ -13,7 +13,7 @@ class UsersController < ApplicationController
   def login
     user = User.find_by(email: user_params[:email])
     if user && user.authenticate(user_params[:password])
-      render json: { user: user, token: jwt_create_token(user) }, status: :ok
+      render json: { user:, token: jwt_create_token(user) }, status: :ok
     else
       render json: { status: 'error', message: 'メールアドレスまたはパスワードが正しくありません' }, status: :unauthorized
     end
@@ -22,7 +22,7 @@ class UsersController < ApplicationController
   def show
     user = @current_user
     if user
-      render json: { 
+      render json: {
         user: {
           id: user.id,
           username: user.username,
@@ -54,18 +54,15 @@ class UsersController < ApplicationController
       render json: { status: 'error', message: 'ユーザーの削除に失敗しました' }, status: :unprocessable_entity
     end
   end
-  
-  
-  
+
   private
-  
+
   def user_params
     params.require(:user).permit(:username, :email, :password, :password_confirmation)
   end
-  
+
   def jwt_create_token(user)
     payload = { user_id: user.id }
     JWT.encode(payload, Rails.application.secrets.secret_key_base)
   end
 end
-

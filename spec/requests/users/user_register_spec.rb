@@ -26,7 +26,9 @@ RSpec.describe 'ユーザー新規登録', type: :request do
 
     context '無効なパラメータ' do
       before do
-        post '/api/users', params: { user: { username: 'testuser', email: 'user', password: 'password', password_confirmation: 'password' } }
+        post '/api/users',
+             params: { user: { username: 'testuser', email: 'user', password: 'password',
+                               password_confirmation: 'password' } }
       end
 
       it '新しいユーザーを作成しない' do
@@ -35,4 +37,3 @@ RSpec.describe 'ユーザー新規登録', type: :request do
     end
   end
 end
-

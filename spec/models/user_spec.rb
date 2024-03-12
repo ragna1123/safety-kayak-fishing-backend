@@ -24,7 +24,7 @@ RSpec.describe User, type: :model do
   # メールアドレスのフォーマットをテスト
   it 'メールアドレスが正しいフォーマットの場合は有効であること' do
     user = User.new(username: 'testuser', email: 'test@example.com', password: 'password123')
-    expect(user).to be_valid  
+    expect(user).to be_valid
   end
 
   it 'メールアドレスが正しくないフォーマットの場合は無効であること' do

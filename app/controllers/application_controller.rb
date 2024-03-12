@@ -27,5 +27,3 @@ class ApplicationController < ActionController::API
     render json: { status: 'error', message: 'トークンが無効です' }, status: :unauthorized
   end
 end
-
-
