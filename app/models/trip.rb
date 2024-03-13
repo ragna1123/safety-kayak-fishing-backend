@@ -7,5 +7,5 @@ class Trip < ApplicationRecord
   validates :estimated_return_time, presence: true
   validates :details, allow_nil: true, length: { maximum: 255 }
   belongs_to :user
-  belogns_to :location
+  belongs_to :location
 end
