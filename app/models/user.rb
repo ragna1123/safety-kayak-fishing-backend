@@ -12,4 +12,8 @@ class User < ApplicationRecord
                          with: VALID_PASSWORD_REGEX
                        },
                        allow_nil: true
+  has_many :trips, dependent: :destroy
+  has_many :favorite_locations, dependent: :destroy
+  has_many :emergency_contacts, dependent: :destroy
+  has_manu :feedbacks
 end

@@ -3,5 +3,6 @@
 class Location < ApplicationRecord
   validates :latitude, presence: true
   validates :longtude, presence: true
-  belongs_to :trip
+  has_many :favorite_locations, dependent: :destroy
+  has_many :trips, dependent: :destroy
 end

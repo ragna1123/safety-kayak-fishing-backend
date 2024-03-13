@@ -92,3 +92,18 @@ RSpec.configure do |config|
   #   # as the one that triggered the failure.
   #   Kernel.srand config.seed
 end
+
+# spec/rails_helper.rbまたはspec/supportディレクトリ内のヘルパーファイル
+
+def valid_headers(user)
+  token = create_token_for(user)
+  {
+    "Authorization" => "Bearer #{token}"
+  }
+end
+
+def create_token_for(user)
+  payload = { user_id: user.id }
+  JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
+end
+

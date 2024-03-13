@@ -7,5 +7,5 @@ class WeatherData < ApplicationRecord
   validates :wind_speed, presence: true
   validates :wind_direction, presence: true
   validates :wave_height, presence: true
-  belongs_to :trip_weather
+  has_many :trip_weathers, dependent: :destroy
 end
