@@ -21,6 +21,17 @@ RSpec.describe User, type: :model do
     expect(user).not_to be_valid
   end
 
+  # メールアドレスのフォーマットをテスト
+  it 'メールアドレスが正しいフォーマットの場合は有効であること' do
+    user = User.new(username: 'testuser', email: 'test@example.com', password: 'password123')
+    expect(user).to be_valid  
+  end
+
+  it 'メールアドレスが正しくないフォーマットの場合は無効であること' do
+    user = User.new(username: 'testuser', email: 'test@emial', password: 'password123')
+    expect(user).not_to be_valid
+  end
+
   # プロファイル画像のURLのnil許容をテスト
   it 'プロファイル画像のURLがnilでも有効であること' do
     user = User.new(username: 'testuser', email: 'test@example.com', profile_image_url: nil, password: 'password123')
