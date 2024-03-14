@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe 'ユーザーログイン', type: :request do
-  let(:user) { create(:user)}
+  let(:user) { create(:user) }
 
   let(:valid_params) do
     {
@@ -33,7 +33,7 @@ RSpec.describe 'ユーザーログイン', type: :request do
   end
 
   describe 'POST /api/users/login' do
-    before { user }  # ユーザーを事前に作成
+    before { user } # ユーザーを事前に作成
 
     context 'パラメータが正しい場合' do
       before do

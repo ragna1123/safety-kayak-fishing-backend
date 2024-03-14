@@ -7,19 +7,22 @@ RSpec.describe FavoriteLocation, type: :model do
   let(:location) { create(:location) }
   # user_idの存在性をテスト
   it 'user_idがない場合は無効であること' do
-    favorite_location = FavoriteLocation.new(user_id: nil, location_id: location.id, name: 'お気に入りの場所', description: '素晴らしい場所です')
+    favorite_location = FavoriteLocation.new(user_id: nil, location_id: location.id, name: 'お気に入りの場所',
+                                             description: '素晴らしい場所です')
     expect(favorite_location).not_to be_valid
   end
 
   # location_idの存在性をテスト
   it 'location_idがない場合は無効であること' do
-    favorite_location = FavoriteLocation.new(user_id: user.id, location_id: nil, name: 'お気に入りの場所', description: '素晴らしい場所です')
+    favorite_location = FavoriteLocation.new(user_id: user.id, location_id: nil, name: 'お気に入りの場所',
+                                             description: '素晴らしい場所です')
     expect(favorite_location).not_to be_valid
   end
 
   # nameの存在性をテスト
   it 'nameがない場合は無効であること' do
-    favorite_location = FavoriteLocation.new(user_id: user.id, location_id: location.id, name: nil, description: '素晴らしい場所です')
+    favorite_location = FavoriteLocation.new(user_id: user.id, location_id: location.id, name: nil,
+                                             description: '素晴らしい場所です')
     expect(favorite_location).not_to be_valid
   end
 

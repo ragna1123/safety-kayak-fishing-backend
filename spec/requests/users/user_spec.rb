@@ -73,4 +73,3 @@ RSpec.describe 'ユーザー情報周り', type: :request do
     JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
   end
 end
-
