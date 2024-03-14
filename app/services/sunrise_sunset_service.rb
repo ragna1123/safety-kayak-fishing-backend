@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SunriseSunsetService
   include HTTParty
   base_uri 'https://api.sunrise-sunset.org'

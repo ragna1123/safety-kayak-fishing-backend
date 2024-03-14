@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class IntegrationTripRetrun < ActiveRecord::Migration[7.1]
   def change
     # trips_retrunテーブルを削除

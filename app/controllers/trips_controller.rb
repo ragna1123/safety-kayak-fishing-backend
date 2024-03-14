@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TripsController < ApplicationController
   before_action :jwt_authenticate
 
@@ -25,7 +27,7 @@ class TripsController < ApplicationController
   # 出船予定を取得する GET /api/trips/:id
   def show
     trip = Trip.find_by(id: params[:id])
-    
+
     if trip.nil?
       render json: { status: 'error', message: '出船予定が見つかりません' }, status: :not_found
     elsif trip.user_id != @current_user.id
@@ -33,16 +35,17 @@ class TripsController < ApplicationController
     else
       render json: { status: 'success', data: trip }, status: :ok
     end
-  end  
+  end
 
   private
 
   def trip_params
-    params.require(:trip).permit(:departure_time, :estimated_return_time, :details, location_data: [:latitude, :longitude])
+    params.require(:trip).permit(:departure_time, :estimated_return_time, :details,
+                                 location_data: %i[latitude longitude])
   end
 
   def render_error(message)
-    render json: { status: 'error', message: message }, status: :unprocessable_entity
+    render json: { status: 'error', message: }, status: :unprocessable_entity
   end
 
   # 緯度と経度が有効な値かどうかをチェックするメソッド
@@ -52,13 +55,13 @@ class TripsController < ApplicationController
       render json: { status: 'error', message: '位置情報が必要です' }, status: :unprocessable_entity
       return false
     end
-  
+
     # 緯度経度が存在するが、無効な場合
     unless valid_coordinate?(location_data[:latitude], location_data[:longitude])
       render json: { status: 'error', message: '位置情報が無効です' }, status: :unprocessable_entity
       return false
     end
-  
+
     true
   end
 
@@ -67,7 +70,8 @@ class TripsController < ApplicationController
   end
 
   def set_location(trip)
-    location = Location.find_or_create_by(latitude: trip_params[:location_data][:latitude], longitude: trip_params[:location_data][:longitude])
+    location = Location.find_or_create_by(latitude: trip_params[:location_data][:latitude],
+                                          longitude: trip_params[:location_data][:longitude])
     trip.location = location
   end
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe TripsController, type: :request do
@@ -19,7 +21,7 @@ RSpec.describe TripsController, type: :request do
   describe 'POST /api/trips' do
     context 'リクエストが有効な場合' do
       before do
-        post '/api/trips', params: { trip: valid_attributes }, headers: headers
+        post '/api/trips', params: { trip: valid_attributes }, headers:
       end
 
       it '出船予定を作成する' do
@@ -29,7 +31,7 @@ RSpec.describe TripsController, type: :request do
 
     context '位置情報が無い場合' do
       before do
-        post '/api/trips', params: { trip: valid_attributes.except(:location_data) }, headers: headers
+        post '/api/trips', params: { trip: valid_attributes.except(:location_data) }, headers:
       end
 
       it 'ステータスコード 422 を返す' do
