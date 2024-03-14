@@ -37,6 +37,42 @@ class TripsController < ApplicationController
     end
   end
 
+  # 出船予定を更新する PUT /api/trips/:id
+  def update
+    trip = Trip.find_by(id: params[:id])
+
+    if trip.nil?
+      render json: { status: 'error', message: '出船予定が見つかりません' }, status: :not_found
+    elsif trip.user_id != @current_user.id
+      render json: { status: 'error', message: '他人の出船予定は更新できません' }, status: :forbidden
+    else
+      return unless location_validates(trip_params[:location_data])
+
+      set_location(trip)
+      fetch_sunrise_sunset_data(trip)
+
+      if trip.update(trip_params.except(:location_data))
+        render json: { status: 'success', message: '出船予定が更新されました' }, status: :ok
+      else
+        render_error('リクエストの値が無効です')
+      end
+    end
+  end
+
+  #　出船予定を削除する DELETE /api/trips/:id
+  def destroy
+    trip = Trip.find_by(id: params[:id])
+
+    if trip.nil?
+      render json: { status: 'error', message: '出船予定が見つかりません' }, status: :not_found
+    elsif trip.user_id != @current_user.id
+      render json: { status: 'error', message: '他人の出船予定は削除できません' }, status: :forbidden
+    else
+      trip.destroy
+      render json: { status: 'success', message: '出船予定が削除されました' }, status: :ok
+    end
+  end
+
   private
 
   def trip_params
