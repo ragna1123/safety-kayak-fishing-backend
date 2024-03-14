@@ -5,4 +5,6 @@ class FavoriteLocation < ApplicationRecord
   validates :location_id, presence: true
   validates :name, presence: true
   validates :description, length: { maximum: 255 }
+  belongs_to :user
+  belongs_to :location
 end

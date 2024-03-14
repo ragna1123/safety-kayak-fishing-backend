@@ -2,15 +2,25 @@
 
 Rails.application.routes.draw do
   scope :api do
-    # users routes
-    resources :users, only: [] do
+    # ユーザー関連のルーティング
+    resource :users, only: %i[create show update destroy] do
       collection do
-        post '/', action: :create # ユーザー登録
-        post '/login', action: :login # ユーザーログイン
-        get '/', action: :show # ユーザー情報取得
-        put '/', action: :update # ユーザー情報更新
-        delete '/', action: :destroy # ユーザー情報削除
+        post 'login', action: :login # ユーザーログイン
       end
+    end
+
+    # 旅行（トリップ）関連のルーティング
+    resources :trips, only: %i[create index show update destroy] do
+      # 特定のトリップに対する天気情報取得
+      member do
+        resource :weather, only: [:show], controller: 'weather'
+      end
+
+      # トリップの帰投時の処理
+      resource :return, only: [:create], controller: 'trip_returns', on: :member
+
+      # トリップの履歴に関するルーティング
+      resources :histrus, only: %i[index show], controller: 'trip_histories'
     end
   end
 end

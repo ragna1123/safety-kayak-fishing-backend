@@ -1,38 +1,36 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
-RSpec.describe "ユーザーの認証と情報取得", type: :request do
-  let(:user) { User.create!(username: 'testuser', email: "test@example.com", password: "password123", password_confirmation: 'password123') }
-  let(:token) { create_token(user) }
-  let(:headers) { { "Authorization" => "Bearer #{token}" } }
-  
-  before do
-    allow_any_instance_of(ApplicationController).to receive(:jwt_authenticate).and_call_original
-  end
+RSpec.describe 'ユーザー情報周り', type: :request do
+  let(:user) { create(:user) }
+  let(:token) { create_token_for(user) }
+  let(:auth_headers) { { 'Authorization' => "Bearer #{token}" } }
+  let(:no_auth_headers) { {} }
 
-  describe "GET /api/users" do
-    it "有効なトークンでユーザー情報を返すこと" do
-      get "/api/users", headers: headers
-      expect(response).to have_http_status(:ok)
-      expect(json_response["user"]).to include("id", "username", "email", "profile_image_url")
+  describe 'GET /api/users ユーザー情報の取得' do
+    context '有効なトークンでのリクエストの場合' do
+      it 'ユーザー情報を返すこと' do
+        get('/api/users', headers: auth_headers)
+        expect(response).to have_http_status(:ok)
+        expect(json_response['user']).to include('id', 'username', 'email', 'profile_image_url')
+      end
     end
 
-    it "トークンなしで未認証を返すこと" do
-      get "/api/users"
-      expect(response).to have_http_status(:unauthorized)
+    context 'トークンなしでのリクエストの場合' do
+      it '未認証を返すこと' do
+        get('/api/users', headers: no_auth_headers)
+        expect(response).to have_http_status(:unauthorized)
+      end
     end
   end
 
-  describe "PUT /api/users" do
-    let(:new_attributes) {
-      {
-        username: "updateduser",
-        email: "updated@example.com"
-      }
-    }
+  describe 'PUT /api/users ユーザー情報の更新' do
+    let(:new_attributes) { { username: 'updateduser', email: 'updated@example.com' } }
 
-    context "有効なトークンで更新を行う場合" do
-      it "ユーザー情報を更新する" do
-        put "/api/users", params: { user: new_attributes }, headers: headers
+    context '有効なトークンでのリクエストの場合' do
+      it 'ユーザー情報を更新する' do
+        put('/api/users', params: { user: new_attributes }, headers: auth_headers)
         expect(response).to have_http_status(:ok)
         user.reload
         expect(user.username).to eq(new_attributes[:username])
@@ -40,25 +38,25 @@ RSpec.describe "ユーザーの認証と情報取得", type: :request do
       end
     end
 
-    context "トークンなしで更新を行う場合" do
-      it "未認証を返す" do
-        put "/api/users", params: { user: new_attributes }
+    context 'トークンなしでのリクエストの場合' do
+      it '未認証を返す' do
+        put('/api/users', params: { user: new_attributes }, headers: no_auth_headers)
         expect(response).to have_http_status(:unauthorized)
       end
     end
   end
 
-  describe "DELETE /api/users" do
-    context "有効なトークンで削除を行う場合" do
-      it "ユーザーを削除する" do
-        delete "/api/users", headers: headers
+  describe 'DELETE /api/users ユーザー情報の削除' do
+    context '有効なトークンでのリクエストの場合' do
+      it 'ユーザーを削除する' do
+        delete('/api/users', headers: auth_headers)
         expect(response).to have_http_status(:ok)
       end
     end
 
-    context "無効なトークンで削除を行う場合" do
-      it "未認証を返す" do
-        delete "/api/users"
+    context 'トークンなしでのリクエストの場合' do
+      it '未認証を返す' do
+        delete('/api/users', headers: no_auth_headers)
         expect(response).to have_http_status(:unauthorized)
       end
     end
@@ -70,8 +68,9 @@ RSpec.describe "ユーザーの認証と情報取得", type: :request do
     JSON.parse(response.body)
   end
 
-  def create_token(user)
+  def create_token_for(user)
     payload = { user_id: user.id }
-    JWT.encode(payload, Rails.application.credentials.secret_key_base)
+    JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
   end
 end
+

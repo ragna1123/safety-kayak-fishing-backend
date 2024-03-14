@@ -5,5 +5,9 @@ class Trip < ApplicationRecord
   validates :location_id, presence: true
   validates :departure_time, presence: true
   validates :estimated_return_time, presence: true
-  validates :details, allow_nil: true, length: { maximum: 255 }
+  validates :details, length: { maximum: 255 }
+  validates :return_details, length: { maximum: 255 }
+
+  belongs_to :user
+  belongs_to :location
 end

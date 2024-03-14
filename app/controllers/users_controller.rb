@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class UsersController < ApplicationController
-  before_action :jwt_authenticate, only: [:show, :update, :destroy]
-  
+  before_action :jwt_authenticate, only: %i[show update destroy]
+
   def create
     user = User.new(user_params)
     if user.save
@@ -12,8 +14,8 @@ class UsersController < ApplicationController
 
   def login
     user = User.find_by(email: user_params[:email])
-    if user && user.authenticate(user_params[:password])
-      render json: { user: user, token: jwt_create_token(user) }, status: :ok
+    if user&.authenticate(user_params[:password])
+      render json: { user:, token: jwt_create_token(user) }, status: :ok
     else
       render json: { status: 'error', message: 'メールアドレスまたはパスワードが正しくありません' }, status: :unauthorized
     end
@@ -22,7 +24,7 @@ class UsersController < ApplicationController
   def show
     user = @current_user
     if user
-      render json: { 
+      render json: {
         user: {
           id: user.id,
           username: user.username,
@@ -31,15 +33,12 @@ class UsersController < ApplicationController
         }
       }, status: :ok
     else
-      render json: { status: 'error', message: 'ユーザーが見つかりません' }, status: :unauthorized
+      render json: { status: 'error', message: '認証に失敗しました' }, status: :unauthorized
     end
   end
 
   def update
-    user = User.find_by(id: @current_user.id)
-
-    if user.update(user_params)
-      @current_user.update(user_params)
+    if @current_user.update(user_params)
       render json: { status: 'success', message: 'ユーザー情報を更新しました' }, status: :ok
     else
       render json: { status: 'error', message: 'ユーザー情報の更新に失敗しました' }, status: :unprocessable_entity
@@ -47,25 +46,21 @@ class UsersController < ApplicationController
   end
 
   def destroy
-    user = User.find_by(id: @current_user.id)
-    if user.destroy
+    if @current_user.destroy
       render json: { status: 'success', message: 'ユーザーを削除しました' }, status: :ok
     else
       render json: { status: 'error', message: 'ユーザーの削除に失敗しました' }, status: :unprocessable_entity
     end
   end
-  
-  
-  
+
   private
-  
+
   def user_params
     params.require(:user).permit(:username, :email, :password, :password_confirmation)
   end
-  
+
   def jwt_create_token(user)
     payload = { user_id: user.id }
-    JWT.encode(payload, Rails.application.secrets.secret_key_base)
+    JWT.encode(payload, Rails.application.credentials.secret_key_base, 'HS256')
   end
 end
-
