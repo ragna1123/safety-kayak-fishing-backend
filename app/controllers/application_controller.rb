@@ -30,6 +30,6 @@ class ApplicationController < ActionController::API
   end
 
   def render_unauthorized
-    render json: { status: 'error', message: 'トークンが無効です' }, status: :unauthorized
+    render json: { status: 'error', message: 'トークンが見つからないか無効です' }, status: :unauthorized
   end
 end
