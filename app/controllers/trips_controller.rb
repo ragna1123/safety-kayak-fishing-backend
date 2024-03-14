@@ -1,6 +1,7 @@
 class TripsController < ApplicationController
   before_action :jwt_authenticate
 
+  # 出船予定を作成する POST /api/trips
   def create
     trip = @current_user.trips.new(trip_params.except(:location_data))
     return unless location_validates(trip_params[:location_data])
@@ -15,6 +16,25 @@ class TripsController < ApplicationController
     end
   end
 
+  # 出船予定一覧を取得する GET /api/trips
+  def index
+    trips = @current_user.trips.order(departure_time: :desc)
+    render json: { status: 'success', data: trips }, status: :ok
+  end
+
+  # 出船予定を取得する GET /api/trips/:id
+  def show
+    trip = Trip.find_by(id: params[:id])
+    
+    if trip.nil?
+      render json: { status: 'error', message: '出船予定が見つかりません' }, status: :not_found
+    elsif trip.user_id != @current_user.id
+      render json: { status: 'error', message: '他人の出船予定は表示されません' }, status: :forbidden
+    else
+      render json: { status: 'success', data: trip }, status: :ok
+    end
+  end  
+
   private
 
   def trip_params
@@ -27,13 +47,18 @@ class TripsController < ApplicationController
 
   # 緯度と経度が有効な値かどうかをチェックするメソッド
   def location_validates(location_data)
-    if location_data[:latitude].blank? || location_data[:longitude].blank?
+    # location_dataが存在しない、またはlatitudeまたはlongitudeが存在しない場合
+    if location_data.blank? || location_data[:latitude].blank? || location_data[:longitude].blank?
       render json: { status: 'error', message: '位置情報が必要です' }, status: :unprocessable_entity
       return false
-    elsif !valid_coordinate?(location_data[:latitude], location_data[:longitude])
+    end
+  
+    # 緯度経度が存在するが、無効な場合
+    unless valid_coordinate?(location_data[:latitude], location_data[:longitude])
       render json: { status: 'error', message: '位置情報が無効です' }, status: :unprocessable_entity
       return false
     end
+  
     true
   end
 
@@ -61,4 +86,3 @@ class TripsController < ApplicationController
     end
   end
 end
-
