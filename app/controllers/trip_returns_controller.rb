@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TripReturnsController < ApplicationController
   before_action :jwt_authenticate
 
@@ -21,11 +23,10 @@ class TripReturnsController < ApplicationController
       render json: { status: 'error', message: '帰投報告の更新に失敗しました' }, status: :unprocessable_entity
     end
   end
-  
+
   private
 
   def trip_return_params
     params.require(:trip).permit(:return_details)
   end
 end
-

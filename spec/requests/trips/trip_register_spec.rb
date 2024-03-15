@@ -62,17 +62,17 @@ RSpec.describe TripsController, type: :request do
           }
         }
       end
-  
+
       before do
-        post '/api/trips', params: { trip: invalid_time_attributes }, headers: headers
+        post '/api/trips', params: { trip: invalid_time_attributes }, headers:
       end
-  
+
       it 'ステータスコード 422 を返す' do
         expect(response).to have_http_status(:unprocessable_entity)
         expect(JSON.parse(response.body)['message']).to match(/出船予定日が無効です/)
       end
     end
-  
+
     context '出発時間と帰還予定時間が提供されていない場合' do
       let(:no_time_attributes) do
         {
@@ -83,17 +83,17 @@ RSpec.describe TripsController, type: :request do
           }
         }
       end
-  
+
       before do
-        post '/api/trips', params: { trip: no_time_attributes }, headers: headers
+        post '/api/trips', params: { trip: no_time_attributes }, headers:
       end
-  
+
       it 'ステータスコード 422 を返す' do
         expect(response).to have_http_status(:unprocessable_entity)
         expect(JSON.parse(response.body)['message']).to match(/出発時間と帰還予定時間が必要です/)
       end
     end
-    
+
     context '出発時間が現在時刻より過去の場合' do
       let(:past_time_attributes) do
         {
@@ -107,9 +107,9 @@ RSpec.describe TripsController, type: :request do
         }
       end
       before do
-        post '/api/trips', params: { trip: past_time_attributes }, headers: headers
+        post '/api/trips', params: { trip: past_time_attributes }, headers:
       end
-      
+
       it 'ステータスコード 422 を返す' do
         expect(response).to have_http_status(:unprocessable_entity)
         expect(JSON.parse(response.body)['message']).to match(/出船予定日が無効です/)
@@ -117,7 +117,7 @@ RSpec.describe TripsController, type: :request do
     end
 
     context '他の予定と時間が重複する場合' do
-        # 他の予定と時間的に重複する出船予定
+      # 他の予定と時間的に重複する出船予定
       let(:overlapping_attributes) do
         {
           departure_time: valid_attributes[:departure_time] - 1.hour,
@@ -129,18 +129,17 @@ RSpec.describe TripsController, type: :request do
 
       before do
         # 最初に有効な出船予定を作成
-        post '/api/trips', params: { trip: valid_attributes }, headers: headers
+        post('/api/trips', params: { trip: valid_attributes }, headers:)
 
         # 重複する出船予定を作成しようとする
-        post '/api/trips', params: { trip: overlapping_attributes }, headers: headers
+        post '/api/trips', params: { trip: overlapping_attributes }, headers:
       end
 
       it '新しい出船予定は作成されない' do
         expect(response).to have_http_status(:unprocessable_entity)
         expect(JSON.parse(response.body)['message']).to eq('出船時間が被っています')
-        expect(user.trips.count).to eq(1)  # 最初のトリップのみが作成されている
+        expect(user.trips.count).to eq(1) # 最初のトリップのみが作成されている
       end
     end
-
   end
 end

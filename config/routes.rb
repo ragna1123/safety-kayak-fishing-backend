@@ -11,16 +11,21 @@ Rails.application.routes.draw do
 
     # 旅行（トリップ）関連のルーティング
     resources :trips, only: %i[create index show update destroy] do
-      # 特定のトリップに対する天気情報取得
-      member do
-        resource :weather, only: [:show], controller: 'weather'
+      
+      collection do
+        get 'active', action: :active # 出船中の予定を取得
       end
 
       # トリップの帰投時の処理
       resource :return, only: [:update], controller: 'trip_returns', on: :member
-
+      
       # トリップの履歴に関するルーティング
       resources :histrus, only: %i[index show], controller: 'trip_histories'
+      
+      # 特定のトリップに対する天気情報取得
+      member do
+        resource :weather, only: [:show], controller: 'weather'
+      end
     end
   end
 end

@@ -5,14 +5,14 @@ require 'rails_helper'
 RSpec.describe TripReturnsController, type: :request do
   let(:user) { create(:user) }
   let(:headers) { valid_headers(user) } # 有効な認証トークンを含むヘッダーを想定
-  let(:trip) { create(:trip, user: user, departure_time: 2.hours.ago) }
+  let(:trip) { create(:trip, user:, departure_time: 2.hours.ago) }
 
   describe 'PUT /api/trips/:id/return' do
     context '自分のトリップの帰投報告を更新する場合' do
       let(:new_return_details) { '無事帰還しました' }
 
       before do
-        put "/api/trips/#{trip.id}/return", params: { trip: { return_details: new_return_details } }, headers: headers
+        put "/api/trips/#{trip.id}/return", params: { trip: { return_details: new_return_details } }, headers:
       end
 
       it '帰投報告を更新する' do
@@ -30,7 +30,8 @@ RSpec.describe TripReturnsController, type: :request do
       let(:other_users_trip) { create(:trip, user: other_user) }
 
       before do
-        put "/api/trips/#{other_users_trip.id}/return", params: { trip: { return_details: '無事帰還しました' } }, headers: headers
+        put "/api/trips/#{other_users_trip.id}/return", params: { trip: { return_details: '無事帰還しました' } },
+                                                        headers:
       end
 
       it 'ステータスコード403を返す' do
@@ -42,4 +43,3 @@ RSpec.describe TripReturnsController, type: :request do
     end
   end
 end
-

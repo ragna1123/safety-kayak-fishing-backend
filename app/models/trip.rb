@@ -12,6 +12,12 @@ class Trip < ApplicationRecord
   belongs_to :location
 
   # future_trips スコープは、出発時間が現在時刻より未来のトリップを返します。
-  scope :future_trips, -> { where("departure_time > ?", Time.zone.now) }
-  
+  scope :future_trips, -> { where('departure_time > ?', Time.zone.now) }
+
+  # active_trips スコープは、出船中の予定を返します。
+  scope :active_trips, -> { where('departure_time <= ? AND estimated_return_time >= ?', Time.zone.now, Time.zone.now) }
+
+  # past_trips スコープは、帰還予定時間が現在時刻より過去のトリップを返します。
+  scope :past_trips, -> { where('estimated_return_time < ?', Time.zone.now) }
+
 end

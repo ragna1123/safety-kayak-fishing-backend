@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe TripsController, type: :request do
   let(:user) { create(:user) }
   let(:headers) { valid_headers(user) }
   let(:location) { create(:location) }
-  let(:trip) { create(:trip, user: user, location: location) }
-  
+  let(:trip) { create(:trip, user:, location:) }
+
   let(:new_attributes) do
     {
       departure_time: Time.zone.now + 3.hours,
@@ -21,7 +23,7 @@ RSpec.describe TripsController, type: :request do
   describe 'PUT /api/trips/:id' do
     context 'リクエストが有効な場合' do
       before do
-        put "/api/trips/#{trip.id}", params: { trip: new_attributes }, headers: headers
+        put "/api/trips/#{trip.id}", params: { trip: new_attributes }, headers:
       end
 
       it '出船予定を更新し、成功メッセージを返す' do
@@ -35,7 +37,7 @@ RSpec.describe TripsController, type: :request do
       let(:other_users_trip) { create(:trip, user: other_user) }
 
       before do
-        put "/api/trips/#{other_users_trip.id}", params: { trip: new_attributes }, headers: headers
+        put "/api/trips/#{other_users_trip.id}", params: { trip: new_attributes }, headers:
       end
 
       it 'ステータスコード403を返し、アクセスを拒否する' do
@@ -45,11 +47,14 @@ RSpec.describe TripsController, type: :request do
     end
 
     context '他の予定と時間が重複する場合' do
-      let(:overlapping_trip) { create(:trip, user: user, departure_time: new_attributes[:departure_time] - 1.hour, estimated_return_time: new_attributes[:estimated_return_time] - 1.hour) }
+      let(:overlapping_trip) do
+        create(:trip, user:, departure_time: new_attributes[:departure_time] - 1.hour,
+                      estimated_return_time: new_attributes[:estimated_return_time] - 1.hour)
+      end
 
       before do
         overlapping_trip # 重複するトリップを事前に作成
-        put "/api/trips/#{trip.id}", params: { trip: new_attributes }, headers: headers
+        put "/api/trips/#{trip.id}", params: { trip: new_attributes }, headers:
       end
 
       it '出船予定は更新されず、エラーメッセージを返す' do
@@ -59,4 +64,3 @@ RSpec.describe TripsController, type: :request do
     end
   end
 end
-
