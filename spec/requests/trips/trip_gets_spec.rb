@@ -16,7 +16,7 @@ RSpec.describe TripsController, type: :request do
       let!(:trip2) { create(:trip, user:) }
 
       before do
-        get '/api/trips', headers:
+        get '/api/trips', headers: headers
       end
 
       it '出船予定一覧を取得する' do
@@ -70,6 +70,54 @@ RSpec.describe TripsController, type: :request do
         json_response = JSON.parse(response.body)
         trips = json_response['data']
         expect(trips).not_to include(other_users_trip.as_json)
+      end
+    end
+
+    context '未来の出航予定が存在する場合' do
+      let!(:future_trip1) { create(:trip, user: user, departure_time: 1.day.from_now) }
+      let!(:future_trip2) { create(:trip, user: user, departure_time: 2.days.from_now) }
+  
+      before do
+        get '/api/trips', headers: headers
+      end
+  
+      it '未来の出航予定のみが含まれる' do
+        expect(response).to have_http_status(:ok)
+        json_response = JSON.parse(response.body)
+        trips = json_response['data']
+        expect(trips.size).to eq(2)
+        expect(trips.map { |t| t['id'] }).to match_array([future_trip1.id, future_trip2.id])
+      end
+    end
+  
+    context '過去の出航予定のみが存在する場合' do
+      let!(:past_trip) { create(:trip, user: user, departure_time: 1.day.ago) }
+  
+      before do
+        get '/api/trips', headers: headers
+      end
+  
+      it '空の配列が返される' do
+        expect(response).to have_http_status(:ok)
+        json_response = JSON.parse(response.body)
+        expect(json_response['data']).to be_empty
+      end
+    end
+  
+    context '出航予定が降順で返されること' do
+      let!(:future_trip1) { create(:trip, user: user, departure_time: 1.day.from_now) }
+      let!(:future_trip2) { create(:trip, user: user, departure_time: 2.days.from_now) }
+  
+      before do
+        get '/api/trips', headers: headers
+      end
+  
+      it '予定が降順で返される' do
+        expect(response).to have_http_status(:ok)
+        json_response = JSON.parse(response.body)
+        trips = json_response['data']
+        expect(trips.first['id']).to eq(future_trip2.id)
+        expect(trips.last['id']).to eq(future_trip1.id)
       end
     end
   end

@@ -4,8 +4,8 @@ FactoryBot.define do
   factory :trip do
     association :user
     association :location
-    departure_time { '2024-03-15 08:00:00' }
-    estimated_return_time { '2024-03-15 18:00:00' }
+    departure_time { Time.zone.now + 3.hours } # 現在時刻から3時間後
+    estimated_return_time { Time.zone.now + 8.hours } # 現在時刻から8時間後
     details { '東京湾での釣り' }
   end
 end

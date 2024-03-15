@@ -49,5 +49,72 @@ RSpec.describe TripsController, type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
     end
+
+    context '出発時間が帰還予定時間より後の場合' do
+      let(:invalid_time_attributes) do
+        {
+          departure_time: '2024-03-15 18:00:00',
+          estimated_return_time: '2024-03-15 08:00:00',
+          details: '東京湾での釣り',
+          location_data: {
+            latitude: location.latitude,
+            longitude: location.longitude
+          }
+        }
+      end
+  
+      before do
+        post '/api/trips', params: { trip: invalid_time_attributes }, headers: headers
+      end
+  
+      it 'ステータスコード 422 を返す' do
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(JSON.parse(response.body)['message']).to match(/出船予定日が無効です/)
+      end
+    end
+  
+    context '出発時間と帰還予定時間が提供されていない場合' do
+      let(:no_time_attributes) do
+        {
+          details: '東京湾での釣り',
+          location_data: {
+            latitude: location.latitude,
+            longitude: location.longitude
+          }
+        }
+      end
+  
+      before do
+        post '/api/trips', params: { trip: no_time_attributes }, headers: headers
+      end
+  
+      it 'ステータスコード 422 を返す' do
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(JSON.parse(response.body)['message']).to match(/出発時間と帰還予定時間が必要です/)
+      end
+    end
+    
+    context '出発時間が現在時刻より過去の場合' do
+      let(:past_time_attributes) do
+        {
+          departure_time: (Time.zone.now - 1.hour),
+          estimated_return_time: (Time.zone.now + 1.hour),
+          details: '東京湾での釣り',
+          location_data: {
+            latitude: location.latitude,
+            longitude: location.longitude
+          }
+        }
+      end
+      before do
+        post '/api/trips', params: { trip: past_time_attributes }, headers: headers
+      end
+      
+      it 'ステータスコード 422 を返す' do
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(JSON.parse(response.body)['message']).to match(/出船予定日が無効です/)
+      end
+    end
+
   end
 end

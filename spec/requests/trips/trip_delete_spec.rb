@@ -47,7 +47,7 @@ RSpec.describe TripsController, type: :request do
         expect(response).to have_http_status(:forbidden)
         json_response = JSON.parse(response.body)
         expect(json_response['status']).to eq('error')
-        expect(json_response['message']).to eq('他人の出船予定は削除できません')
+        expect(json_response['message']).to eq('他人の出船予定は操作できません')
       end
     end
   end

@@ -10,4 +10,8 @@ class Trip < ApplicationRecord
 
   belongs_to :user
   belongs_to :location
+
+  # future_trips スコープは、出発時間が現在時刻より未来のトリップを返します。
+  scope :future_trips, -> { where("departure_time > ?", Time.zone.now) }
+  
 end
