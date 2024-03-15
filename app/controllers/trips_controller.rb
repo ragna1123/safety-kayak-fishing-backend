@@ -92,8 +92,11 @@ class TripsController < ApplicationController
       return false
     end
 
+    latitude = location_data[:latitude].to_f
+    longitude = location_data[:longitude].to_f
+
     # 緯度経度が存在するが、無効な場合
-    unless valid_coordinate?(location_data[:latitude], location_data[:longitude])
+    unless latitude.between?(-90, 90) && longitude.between?(-180, 180)
       render json: { status: 'error', message: '位置情報が無効です' }, status: :unprocessable_entity
       return false
     end
@@ -101,10 +104,7 @@ class TripsController < ApplicationController
     true
   end
 
-  def valid_coordinate?(latitude, longitude)
-    latitude.to_f.between?(-90, 90) && longitude.to_f.between?(-180, 180)
-  end
-
+  # 出船予定に位置情報を設定するメソッド
   def set_location(trip)
     location = Location.find_or_create_by(latitude: trip_params[:location_data][:latitude],
                                           longitude: trip_params[:location_data][:longitude])
