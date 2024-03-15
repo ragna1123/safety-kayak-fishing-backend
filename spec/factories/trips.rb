@@ -6,6 +6,6 @@ FactoryBot.define do
     association :location
     departure_time { Time.zone.now + 3.hours } # 現在時刻から3時間後
     estimated_return_time { Time.zone.now + 8.hours } # 現在時刻から8時間後
-    details { '東京湾での釣り' }
+    details { Faker::Lorem.sentence }
   end
 end

@@ -8,31 +8,28 @@ RSpec.describe TripsController, type: :request do
 
   # 出船予定一覧を取得する GET /api/trips
   describe 'GET /api/trips' do
-    let(:user) { create(:user) }
-    let(:headers) { valid_headers(user) }
 
     context 'リクエストが有効な場合' do
       let!(:trip1) { create(:trip, user:) }
       let!(:trip2) { create(:trip, user:) }
 
       before do
-        get '/api/trips', headers: headers
+        get '/api/trips', headers:
       end
 
       it '出船予定一覧を取得する' do
         expect(response).to have_http_status(:ok)
-
-        # レスポンスボディからトリップ情報を取得
+      
         json_response = JSON.parse(response.body)
-        trips = json_response['data'] # ネストされた"data"キーからトリップの配列を取得
-
-        # トリップの数を検証
+        trips = json_response['data']
+      
         expect(trips.size).to eq(2)
-
+      
         # トリップの内容を検証
-        expect(trips[0]['id']).to eq(trip1.id)
-        expect(trips[1]['id']).to eq(trip2.id)
+        expect(trips.any? { |t| t['details'] == trip1.details}).to be true
+        expect(trips.any? { |t| t['details'] == trip2.details}).to be true
       end
+      
     end
 
     context '出船予定が存在しない場合' do

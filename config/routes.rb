@@ -17,7 +17,7 @@ Rails.application.routes.draw do
       end
 
       # トリップの帰投時の処理
-      resource :return, only: [:create], controller: 'trip_returns', on: :member
+      resource :return, only: [:update], controller: 'trip_returns', on: :member
 
       # トリップの履歴に関するルーティング
       resources :histrus, only: %i[index show], controller: 'trip_histories'

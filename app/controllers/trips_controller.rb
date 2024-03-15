@@ -9,6 +9,7 @@ class TripsController < ApplicationController
   # 出船予定を作成する POST /api/trips
   def create
     trip = @current_user.trips.new(trip_params.except(:location_data))
+    return unless validate_departure_time(trip)
     set_location_and_fetch_data(trip)
 
     if trip.save
@@ -31,12 +32,20 @@ class TripsController < ApplicationController
 
   # 出船予定を更新する PUT /api/trips/:id
   def update
-    if @trip.update(trip_params.except(:location_data))
+    # リクエストパラメータで @trip を更新するが、まだ保存はしない
+    @trip.assign_attributes(trip_params.except(:location_data))
+  
+    # 更新後の値で出船時間が被っていないかをチェック
+    return unless validate_departure_time(@trip)
+  
+    # バリデーション後、実際にデータベースに保存
+    if @trip.save
       render json: { status: 'success', message: '出船予定が更新されました', data: @trip }, status: :ok
     else
       render_error('リクエストの値が無効です')
     end
   end
+  
 
   # 出船予定を削除する DELETE /api/trips/:id
   def destroy
@@ -104,6 +113,23 @@ class TripsController < ApplicationController
     end
   end
 
+  # 出船時間が被っていないかをチェックするメソッド
+  def validate_departure_time(trip)
+    @current_user.trips.future_trips.each do |t|
+      # 同じ出船予定の場合はスキップ
+      next if t.id == trip.id
+  
+      # 重複チェックロジックの修正
+      if trip.departure_time < t.estimated_return_time && trip.estimated_return_time > t.departure_time
+        render json: { status: 'error', message: '出船時間が被っています' }, status: :unprocessable_entity
+        Rails.logger.info "重複検出: 出船予定ID #{trip.id} が 出船予定ID #{t.id} と時間が重複しています。"
+        Rails.logger.info "重複予定の詳細: [重複予定ID #{t.id}] 出発時間: #{t.departure_time}, 帰還予定時間: #{t.estimated_return_time}"
+        return false
+      end
+    end
+    true
+  end
+
   # 出船予定に位置情報を設定するメソッド
   def set_location(trip)
     location_data = trip_params[:location_data]
@@ -126,6 +152,7 @@ class TripsController < ApplicationController
       Rails.logger.error("Departure time is nil for trip with id #{trip.id}")
     end
   end
+
 
 
   def render_error(message)
