@@ -37,7 +37,7 @@ class TripsController < ApplicationController
     if trips.present?
       render json: { status: 'success', data: trips }, status: :ok
     else
-      render json: { status: 'success', message: '出船中の予定はありません' }, status: :ok
+      render json: { status: 'success', message: '出船中の予定はありません', date: Time.zone.now }, status: :ok
     end
   end
 

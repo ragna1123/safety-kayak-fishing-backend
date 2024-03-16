@@ -3,15 +3,29 @@
 class TripReturnsController < ApplicationController
   before_action :jwt_authenticate
 
-  def update
-    trip = @current_user.trips.find_by(id: params[:trip_id])
+  def returned
+    trip = @current_user.trips.returned_trips.order(return_time: :desc)
 
-    if trip.nil? || trip.user != @current_user
-      render json: { status: 'error', message: '操作が許可されていません' }, status: :forbidden
+    if trip.present?
+      render json: { status: 'success', data: trip }, status: :ok
+    else
+      render json: { status: 'success', message: '帰投報告はありません' }, status: :ok
+    end
+  end
+
+  def unreturned
+    
+  end
+
+  def update
+    trip = @current_user.trips.find_by(id: params[:id])
+
+    if trip.nil?
+      render json: { status: 'error', message: 'トリップが見つかりません' }, status: :not_found
       return
     end
-
-    if trip.departure_time > Time.zone.now
+    
+    unless active?(trip)
       render json: { status: 'error', message: '出航していないトリップは帰投報告できません' }, status: :unprocessable_entity
       return
     end
@@ -28,5 +42,9 @@ class TripReturnsController < ApplicationController
 
   def trip_return_params
     params.require(:trip).permit(:return_details)
+  end
+
+  def active?(trip)
+    Time.zone.now > trip.departure_time
   end
 end
