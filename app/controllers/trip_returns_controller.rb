@@ -14,8 +14,15 @@ class TripReturnsController < ApplicationController
   end
 
   def unreturned
-    
+    trip = @current_user.trips.unreturned_trips.order(return_time: :desc)
+
+    if trip.present?
+      render json: { status: 'success', data: trip }, status: :ok
+    else
+      render json: { status: 'success', message: '未帰投報告はありません' }, status: :ok
+    end
   end
+
 
   def update
     trip = @current_user.trips.find_by(id: params[:id])

@@ -6,6 +6,65 @@ RSpec.describe TripReturnsController, type: :request do
   let(:active_trip) { create(:trip, user: user, departure_time: 2.hours.ago, estimated_return_time: 1.hour.from_now) }
   let(:inactive_trip) { create(:trip, user: user, departure_time: 1.hours.from_now, estimated_return_time: 2.hours.from_now) }
 
+  describe 'GET /api/trips/returned' do
+    context '帰投報告が存在する場合' do
+      let!(:returned_trip) { create(:trip, user: user, return_time: Time.zone.now - 1.day) }
+
+      before do
+        get '/api/trips/returned', headers: headers
+      end
+
+      it '帰投報告のトリップ一覧が返される' do
+        expect(response).to have_http_status(:ok)
+        json_response = JSON.parse(response.body)
+        expect(json_response['data']).not_to be_empty
+        expect(json_response['data'].first['id']).to eq(returned_trip.id)
+      end
+    end
+
+    context '帰投報告が存在しない場合' do
+      before do
+        get '/api/trips/returned', headers: headers
+      end
+
+      it '適切なメッセージが返される' do
+        expect(response).to have_http_status(:ok)
+        json_response = JSON.parse(response.body)
+        expect(json_response['message']).to eq('帰投報告はありません')
+      end
+    end
+  end
+
+  describe 'GET /api/trips/unreturned' do
+    context '未帰投報告が存在する場合' do
+      let!(:returned_trip) { create(:trip, user: user, return_time: nil) }
+
+      before do
+        get '/api/trips/unreturned', headers: headers
+      end
+
+      it '未帰投報告のトリップ一覧が返される' do
+        expect(response).to have_http_status(:ok)
+        json_response = JSON.parse(response.body)
+        expect(json_response['data']).not_to be_empty
+        expect(json_response['data'].first['id']).to eq(returned_trip.id)
+      end
+    end
+
+    context '未帰投報告が存在しない場合' do
+      before do
+        get '/api/trips/unreturned', headers: headers
+      end
+
+      it '適切なメッセージが返される' do
+        expect(response).to have_http_status(:ok)
+        json_response = JSON.parse(response.body)
+        expect(json_response['message']).to eq('未帰投報告はありません')
+      end
+    end
+  end
+
+
   describe 'PUT /api/trips/:id/return' do
     context 'トリップが出航している場合' do
       let(:return_details) { '無事帰還しました' }

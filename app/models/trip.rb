@@ -19,6 +19,8 @@ class Trip < ApplicationRecord
   scope :past_trips, -> { where('estimated_return_time < ?', Time.zone.now) }
   # return_time が nil でないトリップを返します。
   scope :returned_trips, -> { where.not(return_time: nil) }
+  # return_time が nil のトリップを返します。
+  scope :unreturned_trips, -> { where(return_time: nil) }
 
   # トリップが終了していないか、許容期間内にあるかを判断
   def can_report_return?
