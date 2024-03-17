@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class EmergencyContactsController < ApplicationController
   before_action :jwt_authenticate
 
@@ -17,7 +19,7 @@ class EmergencyContactsController < ApplicationController
     return render_error('緊急連絡先が登録されていません', :not_found) if emergency_contacts.empty?
 
     data = emergency_contacts.map(&:attributes)
-    render json: { status: 'success', data: data }, status: :ok
+    render json: { status: 'success', data: }, status: :ok
   end
 
   # 緊急連絡先更新
@@ -51,6 +53,6 @@ class EmergencyContactsController < ApplicationController
   end
 
   def render_error(message, status = :unprocessable_entity)
-    render json: { status: 'error', message: message }, status: status
+    render json: { status: 'error', message: }, status:
   end
 end
