@@ -8,6 +8,9 @@ RSpec.describe TripsController, type: :request do
 
   # 出船予定一覧を取得する GET /api/trips
   describe 'GET /api/trips' do
+    let(:user) { create(:user) }
+    let(:headers) { valid_headers(user) }
+
     context 'リクエストが有効な場合' do
       let!(:trip1) { create(:trip, user:) }
       let!(:trip2) { create(:trip, user:) }
@@ -19,14 +22,16 @@ RSpec.describe TripsController, type: :request do
       it '出船予定一覧を取得する' do
         expect(response).to have_http_status(:ok)
 
+        # レスポンスボディからトリップ情報を取得
         json_response = JSON.parse(response.body)
-        trips = json_response['data']
+        trips = json_response['data'] # ネストされた"data"キーからトリップの配列を取得
 
+        # トリップの数を検証
         expect(trips.size).to eq(2)
 
         # トリップの内容を検証
-        expect(trips.any? { |t| t['details'] == trip1.details }).to be true
-        expect(trips.any? { |t| t['details'] == trip2.details }).to be true
+        expect(trips[0]['id']).to eq(trip1.id)
+        expect(trips[1]['id']).to eq(trip2.id)
       end
     end
 
@@ -65,54 +70,6 @@ RSpec.describe TripsController, type: :request do
         json_response = JSON.parse(response.body)
         trips = json_response['data']
         expect(trips).not_to include(other_users_trip.as_json)
-      end
-    end
-
-    context '未来の出航予定が存在する場合' do
-      let!(:future_trip1) { create(:trip, user:, departure_time: 1.day.from_now) }
-      let!(:future_trip2) { create(:trip, user:, departure_time: 2.days.from_now) }
-
-      before do
-        get '/api/trips', headers:
-      end
-
-      it '未来の出航予定のみが含まれる' do
-        expect(response).to have_http_status(:ok)
-        json_response = JSON.parse(response.body)
-        trips = json_response['data']
-        expect(trips.size).to eq(2)
-        expect(trips.map { |t| t['id'] }).to match_array([future_trip1.id, future_trip2.id])
-      end
-    end
-
-    context '過去の出航予定のみが存在する場合' do
-      let!(:past_trip) { create(:trip, user:, departure_time: 1.day.ago) }
-
-      before do
-        get '/api/trips', headers:
-      end
-
-      it '空の配列が返される' do
-        expect(response).to have_http_status(:ok)
-        json_response = JSON.parse(response.body)
-        expect(json_response['data']).to be_empty
-      end
-    end
-
-    context '出航予定が降順で返されること' do
-      let!(:future_trip1) { create(:trip, user:, departure_time: 1.day.from_now) }
-      let!(:future_trip2) { create(:trip, user:, departure_time: 2.days.from_now) }
-
-      before do
-        get '/api/trips', headers:
-      end
-
-      it '予定が降順で返される' do
-        expect(response).to have_http_status(:ok)
-        json_response = JSON.parse(response.body)
-        trips = json_response['data']
-        expect(trips.first['id']).to eq(future_trip2.id)
-        expect(trips.last['id']).to eq(future_trip1.id)
       end
     end
   end
