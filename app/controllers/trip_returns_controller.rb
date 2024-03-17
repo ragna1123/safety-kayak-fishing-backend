@@ -3,6 +3,7 @@
 class TripReturnsController < ApplicationController
   before_action :jwt_authenticate
 
+  # 帰投報告済みのトリップ一覧取得
   def returned
     trip = @current_user.trips.returned_trips.order(return_time: :desc)
 
@@ -13,6 +14,7 @@ class TripReturnsController < ApplicationController
     end
   end
 
+  # 帰投未報告のトリップ一覧取得
   def unreturned
     trip = @current_user.trips.unreturned_trips.order(return_time: :desc)
 
@@ -23,6 +25,7 @@ class TripReturnsController < ApplicationController
     end
   end
 
+  # 帰投報告の更新
   def update
     trip = @current_user.trips.find_by(id: params[:id])
 
@@ -50,6 +53,7 @@ class TripReturnsController < ApplicationController
     params.require(:trip).permit(:return_details)
   end
 
+  # 出航時刻を過ぎているかを判定
   def active?(trip)
     Time.zone.now > trip.departure_time
   end
