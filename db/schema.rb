@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 20_240_313_105_315) do
+ActiveRecord::Schema[7.1].define(version: 20_240_317_045_207) do
   # These are extensions that must be enabled in order to support this database
   enable_extension 'plpgsql'
 
@@ -32,7 +32,7 @@ ActiveRecord::Schema[7.1].define(version: 20_240_313_105_315) do
   create_table 'favorite_locations', force: :cascade do |t|
     t.integer 'user_id', null: false
     t.integer 'location_id', null: false
-    t.string 'name', null: false
+    t.string 'location_name', null: false
     t.string 'description'
     t.datetime 'created_at', null: false
     t.datetime 'updated_at', null: false
