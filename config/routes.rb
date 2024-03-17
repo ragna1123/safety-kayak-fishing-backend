@@ -27,7 +27,7 @@ Rails.application.routes.draw do
     resources :favorite_locations, only: %i[create destroy index], controller: 'favorite_locations'
     
     # 緊急連絡先関連のルーティング
-    resources :emergency_contacts, only: %i[create destroy update index], controller: 'emergency_contactss'
+    resources :emergency_contacts, only: %i[create destroy update index], controller: 'emergency_contactss
 
   end
 end
