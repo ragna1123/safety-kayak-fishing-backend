@@ -11,6 +11,9 @@ class Trip < ApplicationRecord
   belongs_to :user
   belongs_to :location
 
+  has_many :trip_weathers, dependent: :destroy
+  has_many :weather_data, through: :trip_weathers
+
   # future_trips スコープは、出発時間が現在時刻より未来のトリップを返します。
   scope :future_trips, -> { where('departure_time > ?', Time.zone.now) }
   # active_trips スコープは、出船中の予定を返します。
@@ -31,5 +34,4 @@ class Trip < ApplicationRecord
   def within_allowable_return_period?
     Time.zone.now <= estimated_return_time + 15.minutes
   end
-
 end

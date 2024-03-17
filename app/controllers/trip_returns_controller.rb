@@ -23,7 +23,6 @@ class TripReturnsController < ApplicationController
     end
   end
 
-
   def update
     trip = @current_user.trips.find_by(id: params[:id])
 
@@ -31,7 +30,7 @@ class TripReturnsController < ApplicationController
       render json: { status: 'error', message: 'トリップが見つかりません' }, status: :not_found
       return
     end
-    
+
     unless active?(trip)
       render json: { status: 'error', message: '出航していないトリップは帰投報告できません' }, status: :unprocessable_entity
       return

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class TripHistoriesController < ApplicationController
   before_action :jwt_authenticate
 
@@ -13,11 +15,26 @@ class TripHistoriesController < ApplicationController
   end
 
   def show
-    trip = Trip.find(params[:id])
-    if trip.user_id == @current_user.id
-      render json: { status: 'success', data: trip }, status: :ok
-    else
-      render json: { status: 'error', message: '他のユーザーの出船予定は閲覧できません' }, status: :forbidden
+    # ユーザーが作成したトリップの履歴と天気履歴を取得
+    trip = @current_user.trips.past_trips.find_by(id: params[:id])
+
+    # トリップが存在しない場合はエラーレスポンスを返す
+    if trip.nil?
+      render json: { status: 'error', message: 'トリップが見つかりません' }, status: :not_found
+      return
     end
+
+    weather_histories = trip.trip_weathers
+    render json: {
+      status: 'success',
+      data: trip,
+      weather_histories: weather_histories.map(&:weather_data)
+    }, status: :ok
+  end
+
+  private
+
+  def render_error(message)
+    render json: { status: 'error', message: }, status: :unprocessable_entity
   end
 end
