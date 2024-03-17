@@ -85,7 +85,7 @@ class TripsController < ApplicationController
 
   # 位置情報を設定し、日の出と日没のデータを取得するメソッド
   def set_location_and_fetch_data(trip)
-    set_location(trip)
+    set_location(trip) # lcation_settable.rbのset_locationメソッドを使用
     fetch_sunrise_sunset_data(trip)
   end
 

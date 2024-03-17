@@ -22,5 +22,8 @@ Rails.application.routes.draw do
         get 'history', to: 'trip_histories#show' # 特定のトリップ履歴と天気データの取得
       end
     end
+
+    # お気に入り関連のルーティング
+    resources :favorite_locations, only: %i[create destroy index], controller: 'favorite_locations'
   end
 end
