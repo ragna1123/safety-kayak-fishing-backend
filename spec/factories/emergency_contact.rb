@@ -5,7 +5,7 @@ FactoryBot.define do
     association :user
     name { Faker::Name.name }
     relationship { Faker::Lorem.word }
-    phone_number { Faker::PhoneNumber.cell_phone}
+    phone_number { Faker::PhoneNumber.cell_phone }
     email { Faker::Internet.email }
     line_id { Faker::Lorem.word }
   end
