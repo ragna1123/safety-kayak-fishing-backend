@@ -142,4 +142,12 @@ RSpec.describe TripsController, type: :request do
       end
     end
   end
+
+  # describe "#perform" do
+  #   let(:trip) { create(:trip, estimated_return_time: Time.now - 1.hour) }
+
+  #   it "sends an emergency mail when return time is exceeded" do
+  #     expect { subject.perform(trip.estimated_return_time, trip.id) }.to change { ActionMailer::Base.deliveries.count }.by(1)
+  #   end
+  # end
 end

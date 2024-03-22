@@ -5,7 +5,6 @@ Rails.application.routes.draw do
   require 'sidekiq/web'
   mount Sidekiq::Web => '/sidekiq'
 
-
   scope :api do
     # ユーザー関連のルーティング
     resource :users, only: %i[create show update destroy] do
