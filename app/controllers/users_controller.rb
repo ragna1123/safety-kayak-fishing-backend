@@ -3,6 +3,7 @@
 class UsersController < ApplicationController
   before_action :jwt_authenticate, only: %i[show update destroy]
 
+  # ユーザー登録 API POST /api/users
   def create
     user = User.new(user_params)
     if user.save
@@ -12,6 +13,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # ログイン API POST /api/login
   def login
     user = User.find_by(email: user_params[:email])
     if user&.authenticate(user_params[:password])
@@ -21,6 +23,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # ユーザー情報取得 API GET /api/users
   def show
     user = @current_user
     if user
@@ -37,6 +40,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # ユーザー情報更新 API PUT /api/users
   def update
     if @current_user.update(user_params)
       render json: { status: 'success', message: 'ユーザー情報を更新しました' }, status: :ok
@@ -45,6 +49,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # ユーザー削除 API DELETE /api/users
   def destroy
     if @current_user.destroy
       render json: { status: 'success', message: 'ユーザーを削除しました' }, status: :ok
