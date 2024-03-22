@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  # redis setup
+  require 'sidekiq/web'
+  mount Sidekiq::Web => '/sidekiq'
+
+
   scope :api do
     # ユーザー関連のルーティング
     resource :users, only: %i[create show update destroy] do
