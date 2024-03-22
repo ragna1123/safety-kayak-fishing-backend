@@ -16,5 +16,7 @@ class EmergencyMailWorker
 
   def send_emegency_mail(trip)
     Rails.logger.info("#{trip.user.username}さん。緊急メールを送信しました。帰投報告をしてください")
+    # 緊急連絡先への通知
+    
   end
 end

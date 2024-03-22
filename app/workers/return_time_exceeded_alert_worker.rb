@@ -17,5 +17,6 @@ class ReturnTimeExceededAlertWorker
   def return_instraction(trip)
     Rails.logger.info("#{trip.user.username}さん。帰投報告をしてください")
     # 通知を送信する処理
+    # lineへの通知
   end
 end

@@ -13,19 +13,14 @@ class TripsController < ApplicationController
 
     set_location_and_fetch_data(trip)
 
-    ActiveRecord::Base.transaction do
-      if trip.save
-        ReturnTimeExceededAlertWorker.perform_at(trip.estimated_return_time, trip.id)
-        limit_time = trip.estimated_return_time + 15.minutes
-        EmergencyMailWorker.perform_at(limit_time, trip.id)
-        render json: { status: 'success', message: '出船予定が登録されました', data: trip }, status: :created
-      else
-        render_error('リクエストの値が無効です')
-      end
+    if trip.save
+      limit_time_alert_set(trip)
+      render json: { status: 'success', message: '出船予定が登録されました', data: trip }, status: :created
+    else
+      render_error('リクエストの値が無効です')
     end
   rescue StandardError => e
-    Rails.logger.error("Transaction error: #{e}")
-    render json: { status: 'error', message: '出船予定の登録に失敗しました。トランザクション中にエラーが発生しました。' }, status: :internal_server_error
+    log_and_render_transaction_error(e)
   end
 
   # 出船予定一覧を取得する GET /api/trips
@@ -51,33 +46,18 @@ class TripsController < ApplicationController
 
   # 出船予定を更新する PUT /api/trips/:id
   def update
-    # リクエストパラメータで @trip を更新するが、まだ保存はしない
     @trip.assign_attributes(trip_params.except(:location_data))
-
-    # 更新後の値で出船時間が被っていないかをチェック
     return unless validate_departure_time(@trip)
 
-    ActiveRecord::Base.transaction do
-      # バリデーション後、実際にデータベースに保存
-      if @trip.save
-        # 既存のSidekiqジョブをキャンセルする
-        Sidekiq::ScheduledSet.new.select { |job| job.args[0] == @trip.id }.each(&:delete)
-
-        # 新しい値でSidekiqジョブをスケジュールする
-        ReturnTimeExceededAlertWorker.perform_at(@trip.estimated_return_time, @trip.id)
-        limit_time = @trip.estimated_return_time + 15.minutes
-        EmergencyMailWorker.perform_at(limit_time, @trip.id)
-
-        render json: { status: 'success', message: '出船予定が更新されました', data: @trip }, status: :ok
-      else
-        render_error('リクエストの値が無効です')
-      end
+    if @trip.save
+      limit_time_alert_set(@trip)
+      render json: { status: 'success', message: '出船予定が更新されました', data: @trip }, status: :ok
+    else
+      render_error('リクエストの値が無効です')
     end
   rescue StandardError => e
-    Rails.logger.error("Transaction error: #{e}")
-    render json: { status: 'error', message: '出船予定の更新に失敗しました。' }, status: :internal_server_error
+    log_and_render_transaction_error(e)
   end
-
 
   # 出船予定を削除する DELETE /api/trips/:id
   def destroy
@@ -193,15 +173,21 @@ class TripsController < ApplicationController
     end
   end
 
-  # sidekiqのキューを追加するメソッド
+  # Sidekiqのジョブをスケジュールするメソッド
   def limit_time_alert_set(trip)
+    # 既存のジョブをキャンセル
+    Sidekiq::ScheduledSet.new.select { |job| job.args[0] == trip.id }.each(&:delete)
+
+    # 新しいジョブをスケジュール
     ReturnTimeExceededAlertWorker.perform_at(trip.estimated_return_time, trip.id)
     limit_time = trip.estimated_return_time + 15.minutes
     EmergencyMailWorker.perform_at(limit_time, trip.id)
-  rescue StandardError => e
-    Rails.logger.error("Sidekiq error: #{e}")
-    render json: { status: 'error', message: '出船予定の登録に失敗しました。キューの作成時にエラーが発生しました。' }, status: :internal_server_error
-    nil
+  end
+
+  # トランザクションエラーをログに記録し、エラーレスポンスをレンダリングするメソッド
+  def log_and_render_transaction_error(exception)
+    Rails.logger.error("Transaction error: #{exception}")
+    render json: { status: 'error', message: 'トランザクション中にエラーが発生しました。' }, status: :internal_server_error
   end
 
   def render_error(message)
