@@ -1,0 +1,9 @@
+緊急通知
+
+こんにちは、<%= @contact.present? ? @contact.name + "さん" : " " %>。
+
+以下の場所で出船した<%= @user.present? ? @user.username : "あるユーザー" %>が帰投時間を過ぎても帰投報告がされていません。
+
+地図で確認してください： https://www.google.com/maps/?q=<%= @location.present? ? @location.latitude.to_s + "," + @location.longitude.to_s : "位置情報なし" %>
+
+連絡の上、安否の確認をお願いします。

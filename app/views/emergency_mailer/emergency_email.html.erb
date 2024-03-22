@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>緊急通知</title>
+</head>
+<body>
+  <h1>緊急通知</h1>
+  <% if @contact.present? %>
+    <p>こんにちは、<%= @contact.name %>さん。</p>
+  <% else %>
+    <p>こんにちは。</p>
+  <% end %>
+
+  <% if @user.present? && @location.present? %>
+    <p>以下の場所で出船した<%= @user.username %>さんが帰投時間を過ぎても帰投報告がされていません。</p>
+    <p>地図で確認してください。<a href="https://www.google.com/maps/?q=<%= @location.latitude %>,<%= @location.longitude %>">出船した場所をGoogleマップで見る</a></p>
+    <p>連絡の上、安否の確認をお願いします。</p>
+  <% else %>
+    <p>情報が不足しているため、地図情報を提供できません。</p>
+  <% end %>
+</body>
+</html>
+

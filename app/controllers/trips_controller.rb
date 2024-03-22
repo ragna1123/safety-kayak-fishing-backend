@@ -61,11 +61,10 @@ class TripsController < ApplicationController
 
   # 出船予定を削除する DELETE /api/trips/:id
   def destroy
-
     ActiveRecord::Base.transaction do
       if @trip.destroy
         # 既存のSidekiqジョブをキャンセルする
-        Sidekiq::ScheduledSet.new.select { |job| job.args[0] == @trip.id }.each(&:delete)
+        clear_scheduled_job(@trip)
         render json: { status: 'success', message: '出船予定が削除されました' }, status: :ok
       else
         render json: { status: 'error', message: '出船予定の削除に失敗しました' }, status: :unprocessable_entity
@@ -169,19 +168,26 @@ class TripsController < ApplicationController
         trip.sunset_time = response[:sunset]
       end
     else
-      Rails.logger.error("Departure time is nil for trip with id #{trip.id}")
+      Rails.logger.error("トリップID #{trip.id} の出発時間がありません")
     end
   end
 
   # Sidekiqのジョブをスケジュールするメソッド
   def limit_time_alert_set(trip)
     # 既存のジョブをキャンセル
-    Sidekiq::ScheduledSet.new.select { |job| job.args[0] == trip.id }.each(&:delete)
+    clear_scheduled_job(trip)
 
-    # 新しいジョブをスケジュール
+    # 帰投時間が過ぎたらアラートを送信
     ReturnTimeExceededAlertWorker.perform_at(trip.estimated_return_time, trip.id)
-    limit_time = trip.estimated_return_time + 15.minutes
+    # 15分後に緊急メールを送信
+    delay_time = 15.minutes
+    limit_time = trip.estimated_return_time + delay_time
     EmergencyMailWorker.perform_at(limit_time, trip.id)
+  end
+
+  # スケジュールされたジョブをキャンセルするメソッド
+  def clear_scheduled_job(trip)
+    Sidekiq::ScheduledSet.new.select { |job| job.args[0] == trip.id }.each(&:delete)
   end
 
   # トランザクションエラーをログに記録し、エラーレスポンスをレンダリングするメソッド
