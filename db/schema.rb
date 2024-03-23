@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_03_23_143911) do
+ActiveRecord::Schema[7.1].define(version: 2024_03_23_161000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -47,6 +47,25 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_23_143911) do
     t.decimal "longitude", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "tide_data", force: :cascade do |t|
+    t.bigint "location_id", null: false
+    t.datetime "time", null: false
+    t.string "tide_type", null: false
+    t.float "height", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_tide_data_on_location_id"
+  end
+
+  create_table "trip_tides", force: :cascade do |t|
+    t.bigint "trip_id", null: false
+    t.bigint "tide_data_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tide_data_id"], name: "index_trip_tides_on_tide_data_id"
+    t.index ["trip_id"], name: "index_trip_tides_on_trip_id"
   end
 
   create_table "trip_weathers", force: :cascade do |t|
@@ -110,6 +129,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_23_143911) do
   add_foreign_key "favorite_locations", "locations", on_delete: :cascade
   add_foreign_key "favorite_locations", "users", on_delete: :cascade
   add_foreign_key "feedbacks", "users"
+  add_foreign_key "tide_data", "locations"
+  add_foreign_key "trip_tides", "tide_data", column: "tide_data_id"
+  add_foreign_key "trip_tides", "trips"
   add_foreign_key "trip_weathers", "trips", on_delete: :cascade
   add_foreign_key "trip_weathers", "weather_data", column: "weather_data_id", on_delete: :cascade
   add_foreign_key "trips", "locations", on_delete: :cascade

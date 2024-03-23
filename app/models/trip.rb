@@ -13,6 +13,8 @@ class Trip < ApplicationRecord
 
   has_many :trip_weathers, dependent: :destroy
   has_many :weather_data, through: :trip_weathers
+  has_many :trip_tides, dependent: :destroy
+  has_many :tide_data, through: :trip_tides
 
   # future_trips スコープは、出発時間が現在時刻より未来のトリップを返します。
   scope :future_trips, -> { where('departure_time > ?', Time.zone.now) }
