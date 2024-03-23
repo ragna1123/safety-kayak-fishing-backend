@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_03_22_145753) do
+ActiveRecord::Schema[7.1].define(version: 2024_03_23_143911) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -23,8 +23,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_22_145753) do
     t.string "line_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["email"], name: "index_emergency_contacts_on_email", unique: true
-    t.index ["user_id"], name: "index_emergency_contacts_on_user_id"
   end
 
   create_table "favorite_locations", force: :cascade do |t|
@@ -34,8 +32,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_22_145753) do
     t.string "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["location_id"], name: "index_favorite_locations_on_location_id"
-    t.index ["user_id"], name: "index_favorite_locations_on_user_id"
   end
 
   create_table "feedbacks", force: :cascade do |t|
@@ -44,7 +40,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_22_145753) do
     t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_feedbacks_on_user_id"
   end
 
   create_table "locations", force: :cascade do |t|
@@ -59,8 +54,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_22_145753) do
     t.integer "weather_data_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["trip_id"], name: "index_trip_weathers_on_trip_id"
-    t.index ["weather_data_id"], name: "index_trip_weathers_on_weather_data_id"
   end
 
   create_table "trips", force: :cascade do |t|
@@ -72,12 +65,10 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_22_145753) do
     t.integer "safety_score"
     t.datetime "sunrise_time"
     t.datetime "sunset_time"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.datetime "return_time"
     t.text "return_details"
-    t.index ["location_id"], name: "index_trips_on_location_id"
-    t.index ["user_id"], name: "index_trips_on_user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|
@@ -85,25 +76,34 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_22_145753) do
     t.string "email", null: false
     t.string "password_digest", null: false
     t.string "profile_image_url", default: ""
+    t.string "line_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "line_id"
-    t.index ["email"], name: "index_users_on_email", unique: true
-    t.index ["username"], name: "index_users_on_username"
   end
 
   create_table "weather_data", force: :cascade do |t|
-    t.string "weather_condition", null: false
-    t.datetime "timestamp", null: false
-    t.float "temperature", null: false
-    t.float "wind_speed", null: false
-    t.string "wind_direction", null: false
-    t.float "wave_height", null: false
-    t.string "tide"
-    t.float "tide_level"
+    t.datetime "time", null: false
+    t.float "temperature"
+    t.float "pressure"
+    t.integer "cloud_cover"
+    t.float "gust"
+    t.integer "humidity"
+    t.float "precipitation"
+    t.float "swell_direction"
+    t.float "swell_height"
+    t.float "swell_period"
+    t.float "visibility"
+    t.float "water_temperature"
+    t.float "wave_direction"
+    t.float "wave_height"
+    t.float "wave_period"
+    t.float "wind_wave_direction"
+    t.float "wind_wave_height"
+    t.float "wind_wave_period"
+    t.float "wind_direction"
+    t.float "wind_speed"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["timestamp"], name: "index_weather_data_on_timestamp"
   end
 
   add_foreign_key "emergency_contacts", "users", on_delete: :cascade

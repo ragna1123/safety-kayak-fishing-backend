@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 
 class WeatherData < ApplicationRecord
-  validates :weather_condition, presence: true
-  validates :timestamp, presence: true
-  validates :temperature, presence: true
-  validates :wind_speed, presence: true
-  validates :wind_direction, presence: true
-  validates :wave_height, presence: true
-
-  has_many :trip_weathers, dependent: :destroy
-  has_many :trips, through: :trip_weathers
+  validates :time, presence: true
+  validates :cloud_cover, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
+  validates :humidity, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
+  validates :swell_direction, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 360 }
+  validates :wave_direction, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 360 }
+  validates :wind_wave_direction, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 360 }
+  validates :wind_direction, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 360 }
 end
