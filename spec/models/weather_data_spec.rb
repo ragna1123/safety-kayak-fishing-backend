@@ -7,12 +7,12 @@ RSpec.describe WeatherData, type: :model do
     weather_data = WeatherData.new
     weather_data.valid?
     expect(weather_data.errors[:time]).to include("can't be blank")
-    expect(weather_data.errors[:cloud_cover]).to include("is not a number")
-    expect(weather_data.errors[:humidity]).to include("is not a number")
-    expect(weather_data.errors[:swell_direction]).to include("is not a number")
-    expect(weather_data.errors[:wave_direction]).to include("is not a number")
-    expect(weather_data.errors[:wind_wave_direction]).to include("is not a number")
-    expect(weather_data.errors[:wind_direction]).to include("is not a number")
+    expect(weather_data.errors[:cloud_cover]).to include('is not a number')
+    expect(weather_data.errors[:humidity]).to include('is not a number')
+    expect(weather_data.errors[:swell_direction]).to include('is not a number')
+    expect(weather_data.errors[:wave_direction]).to include('is not a number')
+    expect(weather_data.errors[:wind_wave_direction]).to include('is not a number')
+    expect(weather_data.errors[:wind_direction]).to include('is not a number')
   end
 
   # cloud_coverの範囲をテスト

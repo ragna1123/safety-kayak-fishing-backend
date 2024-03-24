@@ -27,13 +27,15 @@ class Trip < ApplicationRecord
   # return_time が nil のトリップを返します。
   scope :unreturned_trips, -> { where(return_time: nil) }
 
+
   # トリップが終了していないか、許容期間内にあるかを判断
   def can_report_return?
     Time.zone.now <= estimated_return_time || within_allowable_return_period?
   end
 
-  # 許容される帰投報告の期間を判断（例: 帰還予定時間から24時間以内など）
+  # 許容される帰投報告の期間を判断
   def within_allowable_return_period?
     Time.zone.now <= estimated_return_time + 15.minutes
   end
+  
 end

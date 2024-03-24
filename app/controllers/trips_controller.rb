@@ -15,6 +15,7 @@ class TripsController < ApplicationController
 
     if trip.save
       limit_time_alert_set(trip)
+      schedule_future_weather_recording(trip)
       render json: { status: 'success', message: '出船予定が登録されました', data: trip }, status: :created
     else
       render_error('リクエストの値が無効です')
@@ -51,6 +52,7 @@ class TripsController < ApplicationController
 
     if @trip.save
       limit_time_alert_set(@trip)
+      schedule_future_weather_recording(@trip)
       render json: { status: 'success', message: '出船予定が更新されました', data: @trip }, status: :ok
     else
       render_error('リクエストの値が無効です')
@@ -183,6 +185,30 @@ class TripsController < ApplicationController
     delay_time = 15.minutes
     limit_time = trip.estimated_return_time + delay_time
     EmergencyMailWorker.perform_at(limit_time, trip.id)
+  end
+
+  # 未来の天気データのスケジュール
+  def schedule_future_weather_recording(trip)
+    begin
+      future_intervals(trip).each do |time|
+        Rails.logger.info "トリップ #{trip.id} に対して #{time} で WeatherRecordingWorker をスケジュール中"
+        WeatherRecordingWorker.perform_at(time, trip.id)
+      end
+    rescue StandardError => e
+      Rails.logger.error "トリップ #{id} の未来の天気データスケジューリングに失敗しました: #{e.message}"
+    end
+  end
+  
+  # 現在時刻から estimated_return__time の間を2時間ごとに分割
+  def future_intervals(trip)
+    intervals = []
+    time = trip.departure_time
+    
+    while time <= trip.estimated_return_time
+      intervals << time
+      time += 2.hours
+    end
+    intervals
   end
 
   # スケジュールされたジョブをキャンセルするメソッド

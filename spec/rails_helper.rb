@@ -71,5 +71,4 @@ RSpec.configure do |config|
     Sidekiq::ScheduledSet.new.clear
     Sidekiq::DeadSet.new.clear
   end
-
 end

@@ -8,7 +8,7 @@ class EmergencyMailWorker
     return unless trip && trip.estimated_return_time < Time.now
 
     # トリップの帰投時間が過ぎている場合、緊急メールを送信
-    send_emergency_mail(trip) if trip.user && trip.user.emergency_contacts.any?
+    send_emergency_mail(trip) if trip.user&.emergency_contacts&.any?
     # send_emergency_line_message(trip) if trip.user && trip.user.emergency_contacts.any? { |contact| contact.line_id.present? }
   end
 
@@ -32,6 +32,3 @@ class EmergencyMailWorker
   #   end
   # end
 end
-
-
-

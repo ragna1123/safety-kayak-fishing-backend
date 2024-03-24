@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class WeatherAdvisoryWorker
   include Sidekiq::Worker
 
@@ -5,11 +7,12 @@ class WeatherAdvisoryWorker
   WAVE_THRESHOLD = 3 # 波高の閾値（例: 3m）
 
   def perform
-    Trip.where('departure_time <= ? AND (estimated_return_time IS NULL OR estimated_return_time >= ?)', 2.hours.ago, Time.now).each do |trip|
+    Trip.where('departure_time <= ? AND (estimated_return_time IS NULL OR estimated_return_time >= ?)', 2.hours.ago,
+               Time.now).each do |trip|
       weather_data = fetch_weather_data(trip.location.latitude, trip.location.longitude)
 
       if weather_data[:wind_speed] > WIND_THRESHOLD || weather_data[:wave_height] > WAVE_THRESHOLD
-        send_line_message(trip.user, "警告: 現在の気象条件は安全基準を超えています。")
+        send_line_message(trip.user, '警告: 現在の気象条件は安全基準を超えています。')
       end
     end
   end

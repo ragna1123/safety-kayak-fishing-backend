@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReturnAlertMailer < ApplicationMailer
   default from: 'noreply@example.com'
 

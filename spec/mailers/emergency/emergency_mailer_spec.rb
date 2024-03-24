@@ -1,5 +1,7 @@
-require "rails_helper"
-require "sidekiq/testing"
+# frozen_string_literal: true
+
+require 'rails_helper'
+require 'sidekiq/testing'
 
 RSpec.describe EmergencyMailer, type: :mailer do
   # メール配列をテスト後にクリア
@@ -7,9 +9,9 @@ RSpec.describe EmergencyMailer, type: :mailer do
     ActionMailer::Base.deliveries.clear
   end
 
-  let(:user) { create(:user) }  # FactoryBotでユーザーを作成
-  let(:emergency_contact) { create(:emergency_contact, user: user) }  # 緊急連絡先を作成
-  let(:trip) { create(:trip, user: user) }  # トリップを作成
+  let(:user) { create(:user) } # FactoryBotでユーザーを作成
+  let(:emergency_contact) { create(:emergency_contact, user:) } # 緊急連絡先を作成
+  let(:trip) { create(:trip, user:) } # トリップを作成
 
   describe '#emergency_email' do
     before do
@@ -26,5 +28,3 @@ RSpec.describe EmergencyMailer, type: :mailer do
     end
   end
 end
-
-

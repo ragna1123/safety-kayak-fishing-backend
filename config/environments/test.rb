@@ -67,5 +67,4 @@ Rails.application.configure do
   # sidekiqのジョブをインラインで実行
   config.active_job.queue_adapter = :inline
   config.action_mailer.delivery_method = :test
-
 end
