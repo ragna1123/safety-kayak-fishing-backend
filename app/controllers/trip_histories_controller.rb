@@ -24,11 +24,13 @@ class TripHistoriesController < ApplicationController
       return
     end
 
+    tide_histories = trip.trip_tides
     weather_histories = trip.trip_weathers
     render json: {
       status: 'success',
       data: trip,
-      weather_histories: weather_histories.map(&:weather_data)
+      weather_histories: weather_histories.map(&:weather_data),
+      tide_histories: tide_histories.map(&:tide_data)
     }, status: :ok
   end
 
