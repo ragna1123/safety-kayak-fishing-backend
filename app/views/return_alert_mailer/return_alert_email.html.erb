@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>帰投勧告</title>
+</head>
+<body>
+  <h1>帰投勧告</h1>
+    <p>こんにちは、<%= @user.username %>さん。</p>
+
+    <p>帰投設定時間を過ぎました。</p>
+    <p>帰投設定時刻<%= @return_time %></p>
+    <p>異常がない場合は帰投報告を完了してください。</p>
+    
+    <p>###帰投報告がされない場合は、15分後に緊急連絡先へメールが送信されます。###</p>
+</body>
+</html>

@@ -35,5 +35,8 @@ Rails.application.routes.draw do
 
     # フィードバック関連のルーティング
     resources :feedbacks, only: %i[create], controller: 'feedbacks'
+
+    # line関連のルーティング
+    get '/line_auth/callback', to: 'line_auth#callback'
   end
 end

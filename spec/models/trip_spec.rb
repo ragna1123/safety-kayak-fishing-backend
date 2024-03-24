@@ -85,4 +85,5 @@ RSpec.describe Trip, type: :model do
                     estimated_return_time: return_time, return_details: short_details)
     expect(trip).to be_valid
   end
+
 end
