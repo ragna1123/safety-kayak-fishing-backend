@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # メーラークラス
 class EmergencyMailer < ApplicationMailer
   default from: 'noreply@example.com'
@@ -15,4 +17,3 @@ class EmergencyMailer < ApplicationMailer
     mail(to: @contact.email, subject: '緊急メール') if @contact.email.present?
   end
 end
-

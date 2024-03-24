@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateInitialSchema < ActiveRecord::Migration[7.1]
   def change
     # emergency_contacts テーブルの作成
@@ -62,7 +64,7 @@ class CreateInitialSchema < ActiveRecord::Migration[7.1]
       t.string :username, null: false
       t.string :email, null: false
       t.string :password_digest, null: false
-      t.string :profile_image_url, default: ""
+      t.string :profile_image_url, default: ''
       t.string :line_id
       t.timestamps null: false
     end
@@ -103,4 +105,3 @@ class CreateInitialSchema < ActiveRecord::Migration[7.1]
     add_foreign_key :trips, :users, on_delete: :cascade
   end
 end
-

@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 class LineSendMessageService
   include HTTParty
   base_uri 'https://api.line.me'
 
-  LINE_API_URL = '/v2/bot/message/push'.freeze
+  LINE_API_URL = '/v2/bot/message/push'
   HEADERS = {
-    "Content-Type" => "application/json",
-    "Authorization" => "Bearer #{ENV['LINE_MESSAGE_API_KEY']}"
+    'Content-Type' => 'application/json',
+    'Authorization' => "Bearer #{ENV['LINE_MESSAGE_API_KEY']}"
   }.freeze
 
   def initialize(user, message)

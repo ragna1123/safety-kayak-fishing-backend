@@ -23,15 +23,13 @@ class ReturnTimeExceededAlertWorker
   # LINEメッセージを送信するメソッド
   def send_return_alert_line_message(trip)
     Rails.logger.info("#{trip.user.username}さんへ、帰投勧告LINEメッセージを送信しました。帰投報告をしてください")
-    if trip.user.line_id.present?
-      jts_time = convert_jts_time(Time.now)
-      jts_return_time = convert_jts_time(trip.estimated_return_time)
-      message = "#{trip.user.username}さんが帰投時刻を過ぎても帰投報告がされていません。帰投予定時刻: #{jts_return_time}、現在時刻: #{jts_time}"
-      LineSendMessageService.new(trip.user, message).call
-    end
-  end
+    return unless trip.user.line_id.present?
 
-  private
+    jts_time = convert_jts_time(Time.now)
+    jts_return_time = convert_jts_time(trip.estimated_return_time)
+    message = "#{trip.user.username}さんが帰投時刻を過ぎても帰投報告がされていません。帰投予定時刻: #{jts_return_time}、現在時刻: #{jts_time}"
+    LineSendMessageService.new(trip.user, message).call
+  end
 
   def convert_jts_time(time)
     jts_time = time + 9.hours
