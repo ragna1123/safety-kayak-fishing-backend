@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class StormglassIoTideService
+class StormGlassIoTideService
   include HTTParty
   base_uri 'https://api.stormglass.io'
 
@@ -20,6 +20,6 @@ class StormglassIoTideService
       end: end_time.to_i
     }
 
-    self.class.get('/v2/tide/sea-level', @options.merge(query:))
+    self.class.get('/v2/tide/extremes/point', @options.merge(query:))
   end
 end
