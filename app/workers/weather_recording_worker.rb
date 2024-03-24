@@ -4,7 +4,7 @@ class WeatherRecordingWorker
   include Sidekiq::Worker
 
   def perform(trip_id)
-    trip = Trip.find(trip_id)
+    trip = Trip.find_by(id: trip_id)
     location = trip.location
 
     # 気象サービスからデータを取得
@@ -12,6 +12,7 @@ class WeatherRecordingWorker
 
     # 取得した気象データをデータベースに保存
     weather_data.each do |data|
+      puts data
       trip.weather_data.create!(
         time: data['time'],
         air_temperature: data['airTemperature']['sg'],
@@ -39,6 +40,7 @@ class WeatherRecordingWorker
 
   private
 
+  # 気象データを取得するメソッド
   def fetch_weather_data(latitude, longitude)
     # StormglassIoWeatherService インスタンスを作成してデータを取得
     StormGlassIoWeatherService.new.fetch_weather_data(latitude, longitude)

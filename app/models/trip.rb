@@ -27,52 +27,15 @@ class Trip < ApplicationRecord
   # return_time が nil のトリップを返します。
   scope :unreturned_trips, -> { where(return_time: nil) }
 
-  # trip が作成された後、天気情報の記録をスケジュールを登録
-  after_create :fetch_past_and_immediate_weather_data, :schedule_future_weather_recording
 
   # トリップが終了していないか、許容期間内にあるかを判断
   def can_report_return?
     Time.zone.now <= estimated_return_time || within_allowable_return_period?
   end
 
-  # 許容される帰投報告の期間を判断（例: 帰還予定時間から24時間以内など）
+  # 許容される帰投報告の期間を判断
   def within_allowable_return_period?
     Time.zone.now <= estimated_return_time + 15.minutes
   end
-
-  private
-
-  def fetch_past_and_immediate_weather_data
-    return unless departure_time < Time.current
-
-    Rails.logger.info "トリップ #{id} の過去および即時の天気データを取得中"
-    begin
-      (departure_time.to_i..Time.current.to_i).step(2.hours) do |time|
-        WeatherRecordingWorker.perform_async(id, Time.at(time))
-      end
-    rescue StandardError => e
-      Rails.logger.error "トリップ #{id} の過去および即時の天気データ取得に失敗しました: #{e.message}"
-    end
-  end
-
-  # 未来の天気データのスケジュール
-  def schedule_future_weather_recording
-    future_intervals.each do |time|
-      Rails.logger.info "トリップ #{id} に対して #{time} で WeatherRecordingWorker をスケジュール中"
-      WeatherRecordingWorker.perform_at(time, id)
-    end
-  rescue StandardError => e
-    Rails.logger.error "トリップ #{id} の未来の天気データスケジューリングに失敗しました: #{e.message}"
-  end
-
-  # 現在時刻から estimated_return_time の間を2時間ごとに分割
-  def future_intervals
-    intervals = []
-    time = [Time.current, departure_time].max
-    while time <= estimated_return_time
-      intervals << time
-      time += 2.hours
-    end
-    intervals
-  end
+  
 end
