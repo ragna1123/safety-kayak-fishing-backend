@@ -9,15 +9,14 @@ class TripsController < ApplicationController
   # 出船予定を作成する POST /api/trips
   def create
     trip = @current_user.trips.new(trip_params.except(:location_data))
-    return unless validate_departure_time(trip)
-
+  
     set_location_and_fetch_data(trip)
-
+  
     if trip.save
       schedule_set_jobs(trip)
       render json: { status: 'success', message: '出船予定が登録されました', data: trip }, status: :created
     else
-      render_error('リクエストの値が無効です')
+      render_error(trip.errors.full_messages.to_sentence)
     end
   rescue StandardError => e
     log_and_render_transaction_error(e)
@@ -47,7 +46,6 @@ class TripsController < ApplicationController
   # 出船予定を更新する PUT /api/trips/:id
   def update
     @trip.assign_attributes(trip_params.except(:location_data))
-    return unless validate_departure_time(@trip)
 
     if @trip.save
       clear_scheduled_job(@trip)
@@ -73,6 +71,7 @@ class TripsController < ApplicationController
     end
   end
 
+    
   private
 
   # --------------------------------------------------
@@ -97,6 +96,7 @@ class TripsController < ApplicationController
     # createアクションの場合のみ位置情報をチェックする
     location_validates(trip_params[:location_data]) if action_name == 'create'
     time_validates(trip_params[:departure_time], trip_params[:estimated_return_time])
+    validate_departure_time(trip_params[:departure_time], trip_params[:estimated_return_time])
   end
 
   # 緯度と経度が有効な値かどうかをチェックするメソッド
@@ -134,16 +134,13 @@ class TripsController < ApplicationController
   end
 
   # 出船時間が被っていないかをチェックするメソッド
-  def validate_departure_time(trip)
+  def validate_departure_time(departure_time, estimated_return_time)
     @current_user.trips.future_trips.each do |t|
-      # 同じ出船予定の場合はスキップ
-      next if t.id == trip.id
-
       # 重複チェックロジックの修正
-      next unless trip.departure_time < t.estimated_return_time && trip.estimated_return_time > t.departure_time
+      next unless departure_time < t.estimated_return_time && estimated_return_time > t.departure_time
 
       render json: { status: 'error', message: '出船時間が被っています' }, status: :unprocessable_entity
-      Rails.logger.info "重複検出: 出船予定ID #{trip.id} が 出船予定ID #{t.id} と時間が重複しています。"
+      Rails.logger.info "重複検出: 出船予定ID #{t.id} と時間が重複しています。"
       Rails.logger.info "重複予定の詳細: [重複予定ID #{t.id}] 出発時間: #{t.departure_time}, 帰還予定時間: #{t.estimated_return_time}"
       return false
     end
@@ -155,7 +152,7 @@ class TripsController < ApplicationController
 
   # 位置情報を設定し、日の出と日没のデータを取得するメソッド
   def set_location_and_fetch_data(trip)
-    set_location(trip) # lcation_settable.rbのset_locationメソッドを使用
+    set_location(trip)
     fetch_sunrise_sunset_data(trip)
   end
 
@@ -171,7 +168,8 @@ class TripsController < ApplicationController
     if trip.departure_time.present?
       date = trip.departure_time.to_date
       response = SunriseSunsetService.new(date, trip.location).call
-      if response[:error]
+  
+      if response[:error].present?
         Rails.logger.error("Sunrise Sunset API error: #{response[:error]}")
       else
         trip.sunrise_time = response[:sunrise]
