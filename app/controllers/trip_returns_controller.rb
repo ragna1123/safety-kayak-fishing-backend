@@ -63,9 +63,7 @@ class TripReturnsController < ApplicationController
   def clear_scheduled_mailer_job(trip)
     scheduled_set = Sidekiq::ScheduledSet.new
     scheduled_set.each do |job|
-      if job.args[0] == trip.id && job.queue == 'mailers'
-        job.delete
-      end
+      job.delete if job.args[0] == trip.id && job.queue == 'mailers'
     end
   end
 end

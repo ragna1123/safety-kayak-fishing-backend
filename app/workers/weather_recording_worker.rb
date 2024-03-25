@@ -6,7 +6,7 @@ class WeatherRecordingWorker
   def perform(trip_id)
     trip = Trip.find_by(id: trip_id)
     location = trip.location
-    
+
     # 気象サービスからデータを取得
     weather_data = fetch_weather_data(location.latitude, location.longitude)
     Rails.logger.info("Weather data: #{weather_data}")
@@ -47,5 +47,4 @@ class WeatherRecordingWorker
     # StormglassIoWeatherService インスタンスを作成してデータを取得
     StormGlassIoWeatherService.new.fetch_weather_data(latitude, longitude)
   end
-
 end

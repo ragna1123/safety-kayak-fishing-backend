@@ -1,5 +1,6 @@
-class TideFetchService
+# frozen_string_literal: true
 
+class TideFetchService
   TIME_ZONE = 'Tokyo'
 
   def initialize(trip)
@@ -19,14 +20,13 @@ class TideFetchService
     tide_service = StormGlassIoTideService.new
     response = tide_service.fetch_tide_data(location.latitude, location.longitude, start_time, end_time)
 
-    tide_data = response["data"]
+    tide_data = response['data']
 
     Rails.logger.info("Tide data: #{tide_data}")
 
     tide_data.each do |data|
-
       tide = TideData.create!(
-        location: location,
+        location:,
         time: data['time'],
         tide_type: data['type'],
         height: data['height']

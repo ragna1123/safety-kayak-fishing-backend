@@ -1,12 +1,13 @@
-class WeatherAlertService
+# frozen_string_literal: true
 
+class WeatherAlertService
   TIME_ZONE = 'Tokyo'
 
   def initialize(trip, weather_data)
     @trip = trip
     @weather_data = weather_data
   end
-  
+
   def call
     @weather_data.each do |data|
       check_and_send_alert(data) if alert_condition_met?(data)
@@ -29,40 +30,45 @@ class WeatherAlertService
 
   def send_alert(message)
     # 出船中かどうかを確認
-    if @trip.departure_time <= Time.zone.now && @trip.estimated_return_time >= Time.zone.now
-      # トリップが出航している場合は、ユーザーにアラートを送信
-      LineSendMessageService.new(@trip.user.line_id, message).call
-      Rails.logger.info "アラートを送信しました: #{message}"
-    end
+    return unless @trip.departure_time <= Time.zone.now && @trip.estimated_return_time >= Time.zone.now
+
+    # トリップが出航している場合は、ユーザーにアラートを送信
+    LineSendMessageService.new(@trip.user.line_id, message).call
+    Rails.logger.info "アラートを送信しました: #{message}"
   end
 
   def format_alert_message(data)
     time = data['time'].in_time_zone(TIME_ZONE).strftime('%H:%M')
-    "【天候注意報】\n時刻: #{time}, 波の高さ: #{data.dig('waveHeight', 'sg')}m (方向: #{direction(data.dig('waveDirection', 'sg'))}), 風速: #{data.dig('windSpeed', 'sg')}m/s (方向: #{direction(data.dig('windDirection', 'sg'))}), うねりの高さ: #{data.dig('swellHeight', 'sg')}m (方向: #{direction(data.dig('swellDirection', 'sg'))})\n注意: 帰投が難しくなる予報が出ています。安全第一で行動してください。必要に応じて早めの帰投も検討してください。"
+    "【天候注意報】\n時刻: #{time}, 波の高さ: #{data.dig('waveHeight',
+                                                         'sg')}m (方向: #{direction(data.dig('waveDirection',
+                                                                                             'sg'))}), 風速: #{data.dig('windSpeed',
+                                                                                                                        'sg')}m/s (方向: #{direction(data.dig('windDirection',
+                                                                                                                                                              'sg'))}), うねりの高さ: #{data.dig('swellHeight',
+                                                                                                                                                                                                 'sg')}m (方向: #{direction(data.dig(
+                                                                                                                                                                                                                              'swellDirection', 'sg'
+                                                                                                                                                                                                                            ))})\n注意: 帰投が難しくなる予報が出ています。安全第一で行動してください。必要に応じて早めの帰投も検討してください。"
   end
 
   def direction(degree)
     case degree
     when 0...22.5, 337.5...360
-      "北"
+      '北'
     when 22.5...67.5
-      "北東"
+      '北東'
     when 67.5...112.5
-      "東"
+      '東'
     when 112.5...157.5
-      "南東"
+      '南東'
     when 157.5...202.5
-      "南"
+      '南'
     when 202.5...247.5
-      "南西"
+      '南西'
     when 247.5...292.5
-      "西"
+      '西'
     when 292.5...337.5
-      "北西"
+      '北西'
     else
-      "不明"
+      '不明'
     end
   end
 end
-
-

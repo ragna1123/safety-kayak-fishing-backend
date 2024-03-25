@@ -19,7 +19,6 @@ class SunriseSunsetService
       }
       Rails.logger.info "日の出: #{response['results']['sunrise']}, 日没: #{response['results']['sunset']}"
     else
-      { error: "sunset_sunrise_APIからのエラーレスポンス: #{response.status}" }
       Rails.logger.error "sunset_sunrise_APIからのエラーレスポンス: #{response.status}"
     end
   rescue HTTParty::Error => e

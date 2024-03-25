@@ -1,9 +1,14 @@
+# frozen_string_literal: true
+
 RSpec.describe Trip, type: :model do
   let(:user) { create(:user) }
   let(:location) { create(:location) }
   let(:valid_departure_time) { Time.zone.now + 5.days } # 有効な出発時間
   let(:valid_estimated_return_time) { valid_departure_time + 10.hours } # 有効な帰還予定時間
-  let(:trip) { create(:trip, user: user, location: location, departure_time: valid_departure_time, estimated_return_time: valid_estimated_return_time) }
+  let(:trip) do
+    create(:trip, user:, location:, departure_time: valid_departure_time,
+                  estimated_return_time: valid_estimated_return_time)
+  end
 
   it 'ユーザーIDがない場合は無効であること' do
     trip.user_id = nil
@@ -44,5 +49,4 @@ RSpec.describe Trip, type: :model do
     trip.return_details = 'a' * 255
     expect(trip).to be_valid
   end
-
 end
