@@ -187,9 +187,16 @@ class TripsController < ApplicationController
 
   # sidekiqのジョブをスケジュールを一括設定するメソッド
   def schedule_set_jobs(trip)
+    departure_alert_set(trip)
     limit_time_alert_set(trip)
     schedule_future_weather_recording(trip)
-    schedule_tide_data_fetching(trip)
+  end
+
+  def departure_alert_set(trip)
+    # 15分前に出船アラートを送信
+    alert_time = trip.departure_time - 15.minutes
+    # 出船時間になったらアラートを送信
+    DepartureTimeAlertWorker.perform_at(alert_time, trip.id)
   end
   
   # Sidekiqのジョブをスケジュールするメソッド
@@ -229,14 +236,6 @@ class TripsController < ApplicationController
       time += 2.hours
     end
     intervals
-  end
-  
-
-
-  # 潮位を取得するメソッド
-  def schedule_tide_data_fetching(trip)
-    time = trip.departure_time
-    TideRecordingWorker.perform_at(time, trip.id)
   end
 
   # スケジュールされたジョブをキャンセルするメソッド

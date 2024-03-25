@@ -6,10 +6,10 @@ class WeatherRecordingWorker
   def perform(trip_id)
     trip = Trip.find_by(id: trip_id)
     location = trip.location
-
+    
     # 気象サービスからデータを取得
     weather_data = fetch_weather_data(location.latitude, location.longitude)
-
+    Rails.logger.info("Weather data: #{weather_data}")
     # 取得した気象データをデータベースに保存
     weather_data.each do |data|
       trip.weather_data.create!(
@@ -34,22 +34,10 @@ class WeatherRecordingWorker
         wind_direction: data['windDirection']['sg'],
         wind_speed: data['windSpeed']['sg']
       )
-      # 閾値の設定
-      
-      
-      # 風速が3.1m/s以上のデータを取得 || 波が1m以上のデータを取得0.4m以上のデータを取得
-      if data['windSpeed']['sg'] >= 3.1 || data['waveHeight']['sg'] >= 1 || data['swellHeight']['sg'] >= 0.4
-        # 気象警報を作成
-        trip.weather_alerts.create!(
-          time: data['time'],
-          wind_speed: data['windSpeed']['sg'],
-          wave_height: data['waveHeight']['sg'],
-          swell_height: data['swellHeight']['sg']
-        )
-      end
     end
 
-
+    # 天候アラートを送信
+    WeatherAlertService.new(trip, weather_data).call
   end
 
   private
@@ -59,4 +47,5 @@ class WeatherRecordingWorker
     # StormglassIoWeatherService インスタンスを作成してデータを取得
     StormGlassIoWeatherService.new.fetch_weather_data(latitude, longitude)
   end
+
 end

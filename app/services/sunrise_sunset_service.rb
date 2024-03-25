@@ -17,8 +17,10 @@ class SunriseSunsetService
         sunrise: Time.zone.parse(response['results']['sunrise']),
         sunset: Time.zone.parse(response['results']['sunset'])
       }
+      Rails.logger.info "日の出: #{response['results']['sunrise']}, 日没: #{response['results']['sunset']}"
     else
-      { error: "APIからのエラーレスポンス: #{response.status}" }
+      { error: "sunset_sunrise_APIからのエラーレスポンス: #{response.status}" }
+      Rails.logger.error "sunset_sunrise_APIからのエラーレスポンス: #{response.status}"
     end
   rescue HTTParty::Error => e
     { error: "HTTPartyエラー: #{e.message}" }

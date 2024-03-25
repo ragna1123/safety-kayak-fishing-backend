@@ -1,25 +1,29 @@
-class TideRecordingWorker
-  include Sidekiq::Worker
+class TideFetchService
 
   TIME_ZONE = 'Tokyo'
 
-  def perform(trip_id)
-    trip = Trip.find_by(id: trip_id)
-    return unless trip
+  def initialize(trip)
+    @trip = trip
+  end
 
-    location = trip.location
+  def call
+    return unless @trip
 
-    start_time = trip.departure_time.in_time_zone(TIME_ZONE).beginning_of_day.utc
+    location = @trip.location
 
-    end_time = (trip.departure_time.in_time_zone(TIME_ZONE) + 1.day).beginning_of_day.utc - 1.minute
+    # departure_timeの0時から23時59分までの潮位データを取得
+    start_time = @trip.departure_time.in_time_zone(TIME_ZONE).beginning_of_day.utc
+
+    end_time = (@trip.departure_time.in_time_zone(TIME_ZONE) + 1.day).beginning_of_day.utc - 1.minute
 
     tide_service = StormGlassIoTideService.new
     response = tide_service.fetch_tide_data(location.latitude, location.longitude, start_time, end_time)
 
     tide_data = response["data"]
 
+    Rails.logger.info("Tide data: #{tide_data}")
+
     tide_data.each do |data|
-      puts data.inspect
 
       tide = TideData.create!(
         location: location,
@@ -29,7 +33,7 @@ class TideRecordingWorker
       )
 
       TripTide.create!(
-        trip_id: trip.id,
+        trip_id: @trip.id,
         tide_data_id: tide.id
       )
     end
