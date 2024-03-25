@@ -10,8 +10,8 @@ RSpec.describe TripsController, type: :request do
 
   let(:new_attributes) do
     {
-      departure_time: Time.zone.now + 3.hours,
-      estimated_return_time: Time.zone.now + 8.hours,
+      departure_time: Time.zone.now + 9.hours,
+      estimated_return_time: Time.zone.now + 12.hours,
       details: '東京湾での釣り',
       location_data: {
         latitude: location.latitude,
