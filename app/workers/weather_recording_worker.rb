@@ -9,10 +9,9 @@ class WeatherRecordingWorker
 
     # 気象サービスからデータを取得
     weather_data = fetch_weather_data(location.latitude, location.longitude)
-
+    Rails.logger.info("Weather data: #{weather_data}")
     # 取得した気象データをデータベースに保存
     weather_data.each do |data|
-      puts data
       trip.weather_data.create!(
         time: data['time'],
         air_temperature: data['airTemperature']['sg'],
@@ -36,6 +35,9 @@ class WeatherRecordingWorker
         wind_speed: data['windSpeed']['sg']
       )
     end
+
+    # 天候アラートを送信
+    WeatherAlertService.new(trip, weather_data).call
   end
 
   private

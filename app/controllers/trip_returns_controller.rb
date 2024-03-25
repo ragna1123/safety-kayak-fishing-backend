@@ -42,7 +42,7 @@ class TripReturnsController < ApplicationController
     # Trip の trip_return_time と return_details を更新
     if trip.update(return_time: Time.zone.now, return_details: trip_return_params[:return_details])
       # 帰投報告済みの場合、スケジュールから削除
-      clear_scheduled_job(trip)
+      clear_scheduled_mailer_job(trip)
       render json: { status: 'success', message: '帰投報告が登録されました', data: trip }, status: :ok
     else
       render json: { status: 'error', message: '帰投報告の更新に失敗しました' }, status: :unprocessable_entity
@@ -60,7 +60,10 @@ class TripReturnsController < ApplicationController
     Time.zone.now > trip.departure_time
   end
 
-  def clear_scheduled_job(trip)
-    Sidekiq::ScheduledSet.new.select { |job| job.args[0] == trip.id }.each(&:delete)
+  def clear_scheduled_mailer_job(trip)
+    scheduled_set = Sidekiq::ScheduledSet.new
+    scheduled_set.each do |job|
+      job.delete if job.args[0] == trip.id && job.queue == 'mailers'
+    end
   end
 end

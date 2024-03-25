@@ -74,8 +74,9 @@ class TripsController < ApplicationController
   end
 
   private
-# --------------------------------------------------
-# 出船予定の取得と権限のチェック
+
+  # --------------------------------------------------
+  # 出船予定の取得と権限のチェック
 
   # 出船予定を取得するメソッド
   def set_trip
@@ -88,8 +89,8 @@ class TripsController < ApplicationController
     render_forbidden('他人の出船予定は操作できません') unless @trip.user_id == @current_user.id
   end
 
-# --------------------------------------------------
-# 出船予定の位置情報と出船予定日のバリデーション
+  # --------------------------------------------------
+  # 出船予定の位置情報と出船予定日のバリデーション
 
   # 位置情報と出船予定日が有効かどうかをチェックするメソッド
   def validate_location_and_time
@@ -98,23 +99,22 @@ class TripsController < ApplicationController
     time_validates(trip_params[:departure_time], trip_params[:estimated_return_time])
   end
 
-  
   # 緯度と経度が有効な値かどうかをチェックするメソッド
   def location_validates(location_data)
     if location_data.blank? || location_data[:latitude].blank? || location_data[:longitude].blank?
       render json: { status: 'error', message: '位置情報が必要です' }, status: :unprocessable_entity
       return false
     end
-    
+
     latitude = location_data[:latitude].to_f
     longitude = location_data[:longitude].to_f
-    
+
     # 緯度が-90から90の間、経度が-180から180の間の値であるかをチェック
     unless latitude.between?(-90, 90) && longitude.between?(-180, 180)
       render json: { status: 'error', message: '位置情報が無効です' }, status: :unprocessable_entity
       return false
     end
-    
+
     true
   end
 
@@ -124,7 +124,7 @@ class TripsController < ApplicationController
       render json: { status: 'error', message: '出発時間と帰還予定時間が必要です' }, status: :unprocessable_entity
       return false
     end
-    
+
     if departure_time > Time.zone.now && estimated_return_time > departure_time
       true
     else
@@ -132,16 +132,16 @@ class TripsController < ApplicationController
       false
     end
   end
-  
+
   # 出船時間が被っていないかをチェックするメソッド
   def validate_departure_time(trip)
     @current_user.trips.future_trips.each do |t|
       # 同じ出船予定の場合はスキップ
       next if t.id == trip.id
-      
+
       # 重複チェックロジックの修正
       next unless trip.departure_time < t.estimated_return_time && trip.estimated_return_time > t.departure_time
-      
+
       render json: { status: 'error', message: '出船時間が被っています' }, status: :unprocessable_entity
       Rails.logger.info "重複検出: 出船予定ID #{trip.id} が 出船予定ID #{t.id} と時間が重複しています。"
       Rails.logger.info "重複予定の詳細: [重複予定ID #{t.id}] 出発時間: #{t.departure_time}, 帰還予定時間: #{t.estimated_return_time}"
@@ -150,15 +150,15 @@ class TripsController < ApplicationController
     true
   end
 
-# --------------------------------------------------
-# 出船予定の位置情報と日の出と日没のデータを設定するメソッド
+  # --------------------------------------------------
+  # 出船予定の位置情報と日の出と日没のデータを設定するメソッド
 
   # 位置情報を設定し、日の出と日没のデータを取得するメソッド
   def set_location_and_fetch_data(trip)
     set_location(trip) # lcation_settable.rbのset_locationメソッドを使用
     fetch_sunrise_sunset_data(trip)
   end
-  
+
   # 出船予定に位置情報を設定するメソッド
   def set_location(trip)
     location_data = trip_params[:location_data]
@@ -182,16 +182,23 @@ class TripsController < ApplicationController
     end
   end
 
-# --------------------------------------------------
-# Sidekiqのジョブ
+  # --------------------------------------------------
+  # Sidekiqのジョブ
 
   # sidekiqのジョブをスケジュールを一括設定するメソッド
   def schedule_set_jobs(trip)
+    departure_alert_set(trip)
     limit_time_alert_set(trip)
     schedule_future_weather_recording(trip)
-    schedule_tide_data_fetching(trip)
   end
-  
+
+  def departure_alert_set(trip)
+    # 15分前に出船アラートを送信
+    alert_time = trip.departure_time - 15.minutes
+    # 出船時間になったらアラートを送信
+    DepartureTimeAlertWorker.perform_at(alert_time, trip.id)
+  end
+
   # Sidekiqのジョブをスケジュールするメソッド
   def limit_time_alert_set(trip)
     # 予定の帰還時間になったらアラートを送信
@@ -204,33 +211,29 @@ class TripsController < ApplicationController
 
   # 天気データの取得スケジュール
   def schedule_future_weather_recording(trip)
-    begin
-      # 当日に二時間おきに天気データを取得をスケジュール
-      future_intervals(trip).each do |time|
-        Rails.logger.info "トリップ #{trip.id} に対して #{time} で WeatherRecordingWorker をスケジュール中"
-        WeatherRecordingWorker.perform_at(time, trip.id)
-      end
-    rescue StandardError => e
-      Rails.logger.error "トリップ #{id} の未来の天気データスケジューリングに失敗しました: #{e.message}"
+    # 当日に二時間おきに天気データを取得をスケジュール
+    future_intervals(trip).each do |time|
+      Rails.logger.info "トリップ #{trip.id} に対して #{time} で WeatherRecordingWorker をスケジュール中"
+      WeatherRecordingWorker.perform_at(time, trip.id)
     end
+  rescue StandardError => e
+    Rails.logger.error "トリップ #{id} の未来の天気データスケジューリングに失敗しました: #{e.message}"
   end
-  
+
   # 現在時刻から estimated_return__time の間を2時間ごとに分割
   def future_intervals(trip)
     intervals = []
-    time = trip.departure_time
-    
-    while time <= trip.estimated_return_time
+    # 日本時間の0時をUTCに変換（前日の15時）
+    start_time = trip.departure_time.in_time_zone('Tokyo').beginning_of_day.utc
+    # 日本時間の翌日0時（24時）をUTCに変換し、1分引く（当日の15時59分）
+    end_time = (trip.departure_time.in_time_zone('Tokyo') + 1.day).beginning_of_day.utc - 1.minute
+
+    time = start_time
+    while time <= end_time
       intervals << time
       time += 2.hours
     end
     intervals
-  end
-
-  # 潮位を取得するメソッド
-  def schedule_tide_data_fetching(trip)
-    time = trip.departure_time
-    TideRecordingWorker.perform_at(time, trip.id)
   end
 
   # スケジュールされたジョブをキャンセルするメソッド
@@ -238,8 +241,8 @@ class TripsController < ApplicationController
     Sidekiq::ScheduledSet.new.select { |job| job.args[0] == trip.id }.each(&:delete)
   end
 
-# --------------------------------------------------
-# ログとエラーハンドリング
+  # --------------------------------------------------
+  # ログとエラーハンドリング
 
   # トランザクションエラーをログに記録し、エラーレスポンスをレンダリングするメソッド
   def log_and_render_transaction_error(exception)
@@ -259,8 +262,8 @@ class TripsController < ApplicationController
     render json: { status: 'error', message: }, status: :forbidden
   end
 
-# --------------------------------------------------
-# パラメータの許可
+  # --------------------------------------------------
+  # パラメータの許可
 
   def trip_params
     params.require(:trip).permit(:departure_time, :estimated_return_time, :details,

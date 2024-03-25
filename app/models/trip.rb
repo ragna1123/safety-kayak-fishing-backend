@@ -8,10 +8,6 @@ class Trip < ApplicationRecord
   validates :details, length: { maximum: 255 }
   validates :return_details, length: { maximum: 255 }
 
-  # custom validation
-  validate :validate_departure_time
-  validate :validate_estimated_return_time
-
   belongs_to :user
   belongs_to :location
 
@@ -31,7 +27,6 @@ class Trip < ApplicationRecord
   # return_time が nil のトリップを返します。
   scope :unreturned_trips, -> { where(return_time: nil) }
 
-
   # トリップが終了していないか、許容期間内にあるかを判断
   def can_report_return?
     Time.zone.now <= estimated_return_time || within_allowable_return_period?
@@ -41,25 +36,4 @@ class Trip < ApplicationRecord
   def within_allowable_return_period?
     Time.zone.now <= estimated_return_time + 15.minutes
   end
-
-  private
-
-  # 10日後までの予定を許可
-  def validate_departure_time
-    return if departure_time.blank?
-
-    if departure_time < Time.zone.now || departure_time > Time.zone.now + 10.days
-      errors.add(:departure_time, 'は現在から10日後までの範囲で設定してください')
-    end
-  end
-
-  # departure_time の 18時間以内を許可
-  def validate_estimated_return_time
-    return if estimated_return_time.blank? || departure_time.blank?
-
-    if estimated_return_time < Time.zone.now || estimated_return_time > departure_time + 18.hours
-      errors.add(:estimated_return_time, 'は出発時間から24時間以内で設定してください')
-    end
-  end
-  
 end
