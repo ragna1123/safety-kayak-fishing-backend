@@ -2,6 +2,7 @@
 
 class EmergencyMailWorker
   include Sidekiq::Worker
+  sidekiq_options queue: 'mailers'
 
   def perform(trip_id)
     trip = Trip.find_by(id: trip_id)

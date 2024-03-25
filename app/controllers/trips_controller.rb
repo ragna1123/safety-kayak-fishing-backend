@@ -218,14 +218,20 @@ class TripsController < ApplicationController
   # 現在時刻から estimated_return__time の間を2時間ごとに分割
   def future_intervals(trip)
     intervals = []
-    time = trip.departure_time
-    
-    while time <= trip.estimated_return_time
+    # 日本時間の0時をUTCに変換（前日の15時）
+    start_time = trip.departure_time.in_time_zone('Tokyo').beginning_of_day.utc
+    # 日本時間の翌日0時（24時）をUTCに変換し、1分引く（当日の15時59分）
+    end_time = (trip.departure_time.in_time_zone('Tokyo') + 1.day).beginning_of_day.utc - 1.minute
+  
+    time = start_time
+    while time <= end_time
       intervals << time
       time += 2.hours
     end
     intervals
   end
+  
+
 
   # 潮位を取得するメソッド
   def schedule_tide_data_fetching(trip)

@@ -12,7 +12,6 @@ class WeatherRecordingWorker
 
     # 取得した気象データをデータベースに保存
     weather_data.each do |data|
-      puts data
       trip.weather_data.create!(
         time: data['time'],
         air_temperature: data['airTemperature']['sg'],
@@ -35,7 +34,22 @@ class WeatherRecordingWorker
         wind_direction: data['windDirection']['sg'],
         wind_speed: data['windSpeed']['sg']
       )
+      # 閾値の設定
+      
+      
+      # 風速が3.1m/s以上のデータを取得 || 波が1m以上のデータを取得0.4m以上のデータを取得
+      if data['windSpeed']['sg'] >= 3.1 || data['waveHeight']['sg'] >= 1 || data['swellHeight']['sg'] >= 0.4
+        # 気象警報を作成
+        trip.weather_alerts.create!(
+          time: data['time'],
+          wind_speed: data['windSpeed']['sg'],
+          wave_height: data['waveHeight']['sg'],
+          swell_height: data['swellHeight']['sg']
+        )
+      end
     end
+
+
   end
 
   private
