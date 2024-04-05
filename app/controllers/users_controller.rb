@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class UsersController < ApplicationController
+  include ActionController::Cookies
   before_action :jwt_authenticate, only: %i[show update destroy]
 
   # ユーザー登録 API POST /api/users
@@ -17,7 +18,9 @@ class UsersController < ApplicationController
   def login
     user = User.find_by(email: user_params[:email])
     if user&.authenticate(user_params[:password])
-      render json: { user:, token: jwt_create_token(user) }, status: :ok
+      token = jwt_create_token(user)
+      cookies.signed[:jwt] = { value: token, httponly: true, expires: 1.month.from_now }
+      render json: { user: }, status: :ok
     else
       render json: { status: 'error', message: 'メールアドレスまたはパスワードが正しくありません' }, status: :unauthorized
     end
