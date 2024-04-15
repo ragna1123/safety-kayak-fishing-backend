@@ -25,21 +25,27 @@ class TripsController < ApplicationController
   # 出船予定一覧を取得する GET /api/trips
   def index
     trips = @current_user.trips.future_trips.order(departure_time: :desc)
-    render json: { status: 'success', data: trips }, status: :ok
+    trips_data = trips.map do |trip|
+      {
+        trip: trip,
+        location_data: trip.location
+      }
+    end
+    render json: { status: 'success', data: trips_data }, status: :ok
   end
 
   # 出船予定を取得する GET /api/trips/:id
   def show
-    render json: { status: 'success', data: @trip }, status: :ok
+    render json: { status: 'success', data: {trip:@trip, location_data: @trip.location }}, status: :ok
   end
 
   # 出船中の予定を取得する GET /api/trips/active
   def active
-    trips = @current_user.trips.active_trips
-    if trips.present?
-      render json: { status: 'success', data: trips }, status: :ok
+    active_trip = @current_user.trips.active_trips.first
+    if active_trip.present?
+      render json: { status: 'success', data: {trip:active_trip, location_data: active_trip.location }}, status: :ok
     else
-      render json: { status: 'success', message: '出船中の予定はありません', date: Time.zone.now }, status: :ok
+      render json: { status: 'success', message: '出船中の予定はありません', data: {}, date: Time.zone.now }, status: :ok
     end
   end
 

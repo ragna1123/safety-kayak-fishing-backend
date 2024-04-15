@@ -2,8 +2,9 @@
 
 # app/controllers/line_auth_controller.rb
 class LineAuthController < ApplicationController
-  before_action :jwt_authenticate
   include HTTParty
+
+  before_action :jwt_authenticate
 
   def callback
     code = params[:code]

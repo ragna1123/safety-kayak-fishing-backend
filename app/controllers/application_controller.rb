@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 class ApplicationController < ActionController::API
-  before_action :jwt_authenticate
+  include ActionController::Cookies
+
+  # before_action :jwt_authenticate
 
   private
 
   def jwt_authenticate
-    token = cookies.signed[:jwt]  # HTTP Onlyクッキーからトークンを取得
+    token = cookies.signed[:jwt]
+      # HTTP Onlyクッキーからトークンを取得
     if token
       begin
         decoded_token = decode_jwt(token)
