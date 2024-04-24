@@ -4,7 +4,7 @@ class TripsController < ApplicationController
   before_action :jwt_authenticate
   before_action :set_trip, only: %i[show update destroy]
   before_action :authorize_user, only: %i[show update destroy]
-  before_action :validate_location_and_time, only: %i[create update]
+  before_action :validate_location_and_time, only: %i[create]
 
   # 出船予定を作成する POST /api/trips
   def create
@@ -52,14 +52,13 @@ class TripsController < ApplicationController
   # 出船予定を更新する PUT /api/trips/:id
   def update
     @trip.assign_attributes(trip_params.except(:location_data))
-
-    if @trip.save
-      clear_scheduled_job(@trip)
-      schedule_set_jobs(@trip)
-      render json: { status: 'success', message: '出船予定が更新されました', data: @trip }, status: :ok
-    else
-      render_error('リクエストの値が無効です')
-    end
+      if @trip.save
+        clear_scheduled_job(@trip)
+        schedule_set_jobs(@trip)
+        render json: { status: 'success', message: '出船予定が更新されました', data: @trip }, status: :ok
+      else
+        render_error('リクエストの値が無効です')
+      end
   rescue StandardError => e
     log_and_render_transaction_error(e)
   end
