@@ -42,7 +42,7 @@ class TripsController < ApplicationController
   # 出船中の予定を取得する GET /api/trips/active
   def active
     active_trip = @current_user.trips.active_trips.first
-    if active_trip.present?
+    if active_trip.present? && !active_trip.return_time.present?
       render json: { status: 'success', data: {trip:active_trip, location_data: active_trip.location }}, status: :ok
     else
       render json: { status: 'success', message: '出船中の予定はありません', data: {}, date: Time.zone.now }, status: :ok
@@ -141,13 +141,12 @@ class TripsController < ApplicationController
   # 出船時間が被っていないかをチェックするメソッド
   def validate_departure_time(departure_time, estimated_return_time)
     @current_user.trips.future_trips.each do |t|
-      # 重複チェックロジックの修正
       next unless departure_time < t.estimated_return_time && estimated_return_time > t.departure_time
-
-      render json: { status: 'error', message: '出船時間が被っています' }, status: :unprocessable_entity
+  
       Rails.logger.info "重複検出: 出船予定ID #{t.id} と時間が重複しています。"
       Rails.logger.info "重複予定の詳細: [重複予定ID #{t.id}] 出発時間: #{t.departure_time}, 帰還予定時間: #{t.estimated_return_time}"
-      return false
+      render json: { status: 'error', message: '出船時間が被っています' }, status: :unprocessable_entity
+      return false # メソッドから抜ける
     end
     true
   end

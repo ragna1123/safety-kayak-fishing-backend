@@ -16,7 +16,7 @@ class TripReturnsController < ApplicationController
 
   # 帰投未報告のトリップ一覧取得
   def unreturned
-    trip = @current_user.trips.unreturned_trips.order(return_time: :desc)
+    trip = @current_user.trips.unreturned_trips.past_trips.order(return_time: :desc)
 
     if trip.present?
       render json: { status: 'success', data: trip }, status: :ok
