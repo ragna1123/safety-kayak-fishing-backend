@@ -42,7 +42,7 @@ class TripsController < ApplicationController
   # 出船中の予定を取得する GET /api/trips/active
   def active
     active_trip = @current_user.trips.active_trips.first
-    if active_trip.present? && !active_trip.return_time.present?
+    if active_trip.present? && active_trip.return_time == nil
       render json: { status: 'success', data: {trip:active_trip, location_data: active_trip.location }}, status: :ok
     else
       render json: { status: 'success', message: '出船中の予定はありません', data: {}, date: Time.zone.now }, status: :ok
@@ -99,9 +99,10 @@ class TripsController < ApplicationController
   # 位置情報と出船予定日が有効かどうかをチェックするメソッド
   def validate_location_and_time
     # createアクションの場合のみ位置情報をチェックする
-    location_validates(trip_params[:location_data]) if action_name == 'create'
-    time_validates(trip_params[:departure_time], trip_params[:estimated_return_time])
-    validate_departure_time(trip_params[:departure_time], trip_params[:estimated_return_time])
+    # return false unless をつけているのは、エラーメッセージを表示して処理を中断するため
+    return false unless location_validates(trip_params[:location_data]) if action_name == 'create'
+    return false unless time_validates(trip_params[:departure_time], trip_params[:estimated_return_time])
+    return false unless validate_departure_time(trip_params[:departure_time], trip_params[:estimated_return_time])
   end
 
   # 緯度と経度が有効な値かどうかをチェックするメソッド
@@ -146,7 +147,7 @@ class TripsController < ApplicationController
       Rails.logger.info "重複検出: 出船予定ID #{t.id} と時間が重複しています。"
       Rails.logger.info "重複予定の詳細: [重複予定ID #{t.id}] 出発時間: #{t.departure_time}, 帰還予定時間: #{t.estimated_return_time}"
       render json: { status: 'error', message: '出船時間が被っています' }, status: :unprocessable_entity
-      return false # メソッドから抜ける
+      return false
     end
     true
   end
