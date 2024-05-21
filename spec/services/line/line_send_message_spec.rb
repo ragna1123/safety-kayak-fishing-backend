@@ -26,7 +26,7 @@ RSpec.describe LineSendMessageService do
       let(:response) { instance_double('HTTParty::Response', success?: false, body: 'Error response body') }
 
       it 'エラーメッセージをログに記録する' do
-        expect(Rails.logger).to receive(:error).with("LINEメッセージ送信失敗: {\"message\":\"The property, 'to', in the request body is invalid (line: -, column: -)\"}")
+        expect(Rails.logger).to receive(:error).with("LINEメッセージ送信失敗: {\"message\":\"Authorization header required. Must follow the scheme, 'Authorization: Bearer <ACCESS TOKEN>'\"}")
         service.call
       end
     end

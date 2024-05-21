@@ -4,7 +4,12 @@ require 'rails_helper'
 
 RSpec.describe TripHistoriesController, type: :request do
   let(:user) { create(:user) }
-  let(:headers) { valid_headers(user) } # valid_headersは、有効な認証トークンを含むヘッダーを返すヘルパーメソッドを想定
+  let(:token) { create_token_for(user) }
+  let(:unauthorized_header){{ 'Cookie' => "jwt=#{""}" }}
+
+  before do
+    set_jwt_cookies(token)
+  end
 
   # ユーザーが作成したトリップの履歴を取得する GET /api/trips/histories
   describe 'GET /api/trips/histories' do
@@ -13,7 +18,7 @@ RSpec.describe TripHistoriesController, type: :request do
       let!(:trip2) { create(:trip, user:, departure_time: 5.day.ago, estimated_return_time: 4.day.ago) }
 
       before do
-        get '/api/trips/histories', headers:
+        get '/api/trips/histories'
       end
 
       it 'ユーザーが作成したトリップの履歴を取得する' do
@@ -32,7 +37,7 @@ RSpec.describe TripHistoriesController, type: :request do
 
     context '過去の出船予定が存在しない場合' do
       before do
-        get '/api/trips/histories', headers:
+        get '/api/trips/histories'
       end
 
       it '空の配列を返す' do
@@ -44,7 +49,7 @@ RSpec.describe TripHistoriesController, type: :request do
 
     context 'ユーザーが未認証の場合' do
       before do
-        get '/api/trips/histories', headers: {} # 空のヘッダーを送信
+        get '/api/trips/histories', headers: unauthorized_header
       end
 
       it 'ステータスコード 401 を返す' do
@@ -63,7 +68,7 @@ RSpec.describe TripHistoriesController, type: :request do
     let!(:trip_weather3) { create(:trip_weather, trip:, weather_data: weather_data3) }
 
     context 'トリップが存在し、ユーザーが認証されている場合' do
-      before { get "/api/trips/#{trip.id}/history", headers: }
+      before { get "/api/trips/#{trip.id}/history"}
 
       it 'トリップと天気の履歴を取得する' do
         expect(response).to have_http_status(:ok)
@@ -74,7 +79,7 @@ RSpec.describe TripHistoriesController, type: :request do
     end
 
     context 'トリップが存在しない場合' do
-      before { get '/api/trips/0/history', headers: }
+      before { get '/api/trips/0/history' }
 
       it 'エラーメッセージを返す' do
         expect(response).to have_http_status(:not_found)
@@ -85,7 +90,7 @@ RSpec.describe TripHistoriesController, type: :request do
 
     context 'ユーザーが認証されていない場合' do
       let(:invalid_headers) { { 'Authorization' => nil } }
-      before { get "/api/trips/#{trip.id}/history", headers: invalid_headers }
+      before { get "/api/trips/#{trip.id}/history", headers: unauthorized_header}
 
       it 'ステータスコード401を返す' do
         expect(response).to have_http_status(:unauthorized)

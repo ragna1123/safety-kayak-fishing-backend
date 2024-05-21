@@ -110,3 +110,7 @@ end
 def json_response
   JSON.parse(response.body)
 end
+
+def set_jwt_cookies(token)
+  cookies[:jwt] = token
+end

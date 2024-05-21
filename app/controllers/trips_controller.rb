@@ -2,9 +2,9 @@
 
 class TripsController < ApplicationController
   before_action :jwt_authenticate
+  before_action :validate_location_and_time, only: %i[create update]
   before_action :set_trip, only: %i[show update destroy]
   before_action :authorize_user, only: %i[show update destroy]
-  before_action :validate_location_and_time, only: %i[create]
 
   # 出船予定を作成する POST /api/trips
   def create
@@ -100,9 +100,12 @@ class TripsController < ApplicationController
   def validate_location_and_time
     # createアクションの場合のみ位置情報をチェックする
     # return false unless をつけているのは、エラーメッセージを表示して処理を中断するため
+    # 緯度経度が有効な値かどうかをチェック
     return false unless location_validates(trip_params[:location_data]) if action_name == 'create'
-    return false unless time_validates(trip_params[:departure_time], trip_params[:estimated_return_time])
-    return false unless validate_departure_time(trip_params[:departure_time], trip_params[:estimated_return_time])
+    # 出船予定日が過去でないかをチェックするメソッド
+    return false unless departure_time_past_is_not(trip_params[:departure_time], trip_params[:estimated_return_time])
+    # 
+    return false unless time_overlap_validate(trip_params[:departure_time], trip_params[:estimated_return_time])
   end
 
   # 緯度と経度が有効な値かどうかをチェックするメソッド
@@ -125,7 +128,7 @@ class TripsController < ApplicationController
   end
 
   # 出船予定日が過去でないかをチェックするメソッド
-  def time_validates(departure_time, estimated_return_time)
+  def departure_time_past_is_not(departure_time, estimated_return_time)
     if departure_time.nil? || estimated_return_time.nil?
       render json: { status: 'error', message: '出発時間と帰還予定時間が必要です' }, status: :unprocessable_entity
       return false
@@ -140,7 +143,7 @@ class TripsController < ApplicationController
   end
 
   # 出船時間が被っていないかをチェックするメソッド
-  def validate_departure_time(departure_time, estimated_return_time)
+  def time_overlap_validate(departure_time, estimated_return_time)
     @current_user.trips.future_trips.each do |t|
       next unless departure_time < t.estimated_return_time && estimated_return_time > t.departure_time
   
@@ -231,10 +234,13 @@ class TripsController < ApplicationController
     # 日本時間の翌日0時（24時）をUTCに変換し、1分引く（当日の15時59分）
     end_time = (trip.departure_time.in_time_zone('Tokyo') + 1.day).beginning_of_day.utc - 1.minute
 
+    # 分割する時間間隔
+    split_time = 2.hours
+
     time = start_time
     while time <= end_time
       intervals << time
-      time += 2.hours
+      time += split_time
     end
     intervals
   end

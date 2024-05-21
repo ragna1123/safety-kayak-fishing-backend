@@ -4,13 +4,18 @@ require 'rails_helper'
 
 RSpec.describe TripsController, type: :request do
   let(:user) { create(:user) }
-  let(:headers) { valid_headers(user) } # 有効な認証トークンを含むヘッダーを想定
+  let(:token) { create_token_for(user) }
+  let(:unauthorized_header){{ 'Cookie' => "jwt=#{""}" }}
   let(:trip) { create(:trip, user:) }
+
+  before do
+    set_jwt_cookies(token)
+  end
 
   describe 'DELETE /api/trips/:id' do
     context 'リクエストが有効な場合' do
       before do
-        delete "/api/trips/#{trip.id}", headers:
+        delete "/api/trips/#{trip.id}"
       end
 
       it '出船予定を削除する' do
@@ -23,7 +28,7 @@ RSpec.describe TripsController, type: :request do
 
     context '無効なIDを指定した場合' do
       before do
-        delete '/api/trips/0', headers:
+        delete '/api/trips/0'
       end
 
       it 'ステータスコード404を返す' do
@@ -39,7 +44,7 @@ RSpec.describe TripsController, type: :request do
       let(:other_users_trip) { create(:trip, user: other_user) }
 
       before do
-        delete "/api/trips/#{other_users_trip.id}", headers:
+        delete "/api/trips/#{other_users_trip.id}"
       end
 
       it 'ステータスコード403を返す' do

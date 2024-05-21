@@ -4,7 +4,8 @@ require 'rails_helper'
 
 RSpec.describe FavoriteLocationsController, type: :request do
   let(:user) { create(:user) }
-  let(:headers) { valid_headers(user) }
+  let(:token) { create_token_for(user) }
+  let(:unauthorized_header){{ 'Cookie' => "jwt=#{""}" }}
   let(:favorite_location) { create(:favorite_location, user:) }
   let(:location) { create(:location) }
   let(:favorite_location_attributes) do
@@ -16,6 +17,11 @@ RSpec.describe FavoriteLocationsController, type: :request do
         longitude: location.longitude
       }
     }
+  end
+
+  before do
+    # ここでクッキーをセットしている
+    set_jwt_cookies(token)
   end
 
   describe 'POST /api/favorite_locations' do
@@ -35,7 +41,7 @@ RSpec.describe FavoriteLocationsController, type: :request do
     context 'リクエストが無効な場合' do
       before do
         post '/api/favorite_locations',
-             params: { favorite_location: { location_name: 'テスト地点', description: 'テスト説明', location_data: { latitude: nil, longitude: nil } } }, headers:
+             params: { favorite_location: { location_name: 'テスト地点', description: 'テスト説明', location_data: { latitude: nil, longitude: nil } } }
       end
 
       it 'ステータスコード 422 を返す' do
@@ -45,7 +51,7 @@ RSpec.describe FavoriteLocationsController, type: :request do
 
     context 'ユーザーが未認証の場合' do
       before do
-        post '/api/favorite_locations', params: { favorite_location: favorite_location_attributes }, headers: {}
+        post '/api/favorite_locations', params: { favorite_location: favorite_location_attributes }, headers: unauthorized_header
       end
 
       it 'ステータスコード 401 を返す' do
@@ -60,7 +66,7 @@ RSpec.describe FavoriteLocationsController, type: :request do
 
     context 'リクエストが有効な場合' do
       before do
-        get '/api/favorite_locations', headers:
+        get '/api/favorite_locations'
       end
 
       it 'お気に入りの出船地点を取得する' do
@@ -73,7 +79,7 @@ RSpec.describe FavoriteLocationsController, type: :request do
 
     context 'ユーザーが未認証の場合' do
       before do
-        get '/api/favorite_locations', headers: {}
+        get '/api/favorite_locations', headers: unauthorized_header
       end
 
       it 'ステータスコード 401 を返す' do
@@ -86,7 +92,7 @@ RSpec.describe FavoriteLocationsController, type: :request do
     let(:favorite_location) { create(:favorite_location, user:) }
     context 'リクエストが有効な場合' do
       before do
-        delete "/api/favorite_locations/#{favorite_location.id}", headers:
+        delete "/api/favorite_locations/#{favorite_location.id}"
       end
 
       it 'お気に入りの出船地点を削除する' do
@@ -99,7 +105,7 @@ RSpec.describe FavoriteLocationsController, type: :request do
 
     context '存在しないお気に入り地点IDを指定した場合' do
       before do
-        delete '/api/favorite_locations/0', headers: # 0は存在しないIDとして使用
+        delete '/api/favorite_locations/0'
       end
 
       it 'ステータスコード 404 を返す' do
@@ -109,7 +115,7 @@ RSpec.describe FavoriteLocationsController, type: :request do
 
     context 'ユーザーが未認証の場合' do
       before do
-        delete "/api/favorite_locations/#{favorite_location.id}", headers: {}
+        delete "/api/favorite_locations/#{favorite_location.id}", headers: unauthorized_header
       end
 
       it 'ステータスコード 401 を返す' do

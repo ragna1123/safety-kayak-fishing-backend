@@ -3,17 +3,18 @@
 class ApplicationController < ActionController::API
   include ActionController::Cookies
 
-  # before_action :jwt_authenticate
-
-  private
-
   def jwt_authenticate
-    token = cookies.signed[:jwt]
-      # HTTP Onlyクッキーからトークンを取得
+    # クッキーからトークンを取得し、ログ出力
+    token = cookies[:jwt]
+
+    Rails.logger.info "Signed token: #{token.inspect}"
+    Rails.logger.info "Raw token from cookies: #{cookies[:jwt].inspect}"
+  
     if token
       begin
         decoded_token = decode_jwt(token)
         @current_user = User.find_by(id: decoded_token['user_id'])
+        # p @current_user
         render_unauthorized unless @current_user
       rescue JWT::DecodeError => e
         render json: { status: 'error', message: "トークンのデコードに失敗しました: #{e.message}" }, status: :unauthorized

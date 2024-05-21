@@ -4,15 +4,21 @@ require 'rails_helper'
 
 RSpec.describe 'EmergencyContacts', type: :request do
   let(:user) { create(:user) }
-  let(:headers) { valid_headers(user) }
   let(:emergency_contact) { create(:emergency_contact, user:) }
+  let(:token) { create_token_for(user) }
+  let(:unauthorized_header){{ 'Cookie' => "jwt=#{""}" }}
+
+  before do
+    # ここでクッキーをセットしている
+    set_jwt_cookies(token)
+  end
 
   describe 'POST /api/emergency_contacts' do
     let(:valid_params) { { emergency_contact: attributes_for(:emergency_contact) } }
 
     context 'リクエストが有効な場合' do
       before do
-        post '/api/emergency_contacts', params: valid_params, headers:
+        post '/api/emergency_contacts', params: valid_params
       end
 
       it '緊急連絡先を登録する' do
@@ -26,7 +32,7 @@ RSpec.describe 'EmergencyContacts', type: :request do
     context 'リクエストが無効な場合' do
       let(:invalid_params) { { emergency_contact: { name: nil, relationship: nil, email: nil } } }
       before do
-        post '/api/emergency_contacts', params: invalid_params, headers:
+        post '/api/emergency_contacts', params: invalid_params
       end
 
       it 'ステータスコード 422 を返す' do
@@ -39,7 +45,7 @@ RSpec.describe 'EmergencyContacts', type: :request do
     context '緊急連絡先が登録されている場合' do
       before do
         create_list(:emergency_contact, 3, user:)
-        get '/api/emergency_contacts', headers:
+        get '/api/emergency_contacts'
       end
 
       it 'ステータスコード 200 を返す' do
@@ -54,7 +60,7 @@ RSpec.describe 'EmergencyContacts', type: :request do
 
     context '緊急連絡先が登録されていない場合' do
       before do
-        get '/api/emergency_contacts', headers:
+        get '/api/emergency_contacts'
       end
 
       it 'ステータスコード 404 を返す' do
@@ -70,7 +76,7 @@ RSpec.describe 'EmergencyContacts', type: :request do
 
     context '緊急連絡先が正常に更新される場合' do
       before do
-        put "/api/emergency_contacts/#{emergency_contact.id}", params: valid_attributes, headers:
+        put "/api/emergency_contacts/#{emergency_contact.id}", params: valid_attributes
       end
 
       it 'ステータスコード 200 を返す' do
@@ -86,7 +92,7 @@ RSpec.describe 'EmergencyContacts', type: :request do
 
     context '対象の緊急連絡先が見つからない場合' do
       before do
-        put "/api/emergency_contacts/#{emergency_contact.id + 1}", params: valid_attributes, headers:
+        put "/api/emergency_contacts/#{emergency_contact.id + 1}", params: valid_attributes
       end
 
       it 'ステータスコード 404 を返す' do
@@ -98,8 +104,7 @@ RSpec.describe 'EmergencyContacts', type: :request do
       let(:invalid_attributes) { { name: '' } } # 無効な属性（名前が空）
 
       before do
-        put "/api/emergency_contacts/#{emergency_contact.id}", params: { emergency_contact: invalid_attributes },
-                                                               headers:
+        put "/api/emergency_contacts/#{emergency_contact.id}", params: { emergency_contact: invalid_attributes }
       end
 
       it 'ステータスコード 422 を返す' do
@@ -111,7 +116,7 @@ RSpec.describe 'EmergencyContacts', type: :request do
   describe 'DELETE /api/emergency_contacts/:id' do
     context '緊急連絡先が正常に削除される場合' do
       before do
-        delete "/api/emergency_contacts/#{emergency_contact.id}", headers:
+        delete "/api/emergency_contacts/#{emergency_contact.id}"
       end
 
       it 'ステータスコード 200 を返す' do
@@ -126,7 +131,7 @@ RSpec.describe 'EmergencyContacts', type: :request do
 
     context '対象の緊急連絡先が見つからない場合' do
       before do
-        delete "/api/emergency_contacts/#{emergency_contact.id + 1}", headers:
+        delete "/api/emergency_contacts/#{emergency_contact.id + 1}"
       end
 
       it 'ステータスコード 404 を返す' do
@@ -136,7 +141,7 @@ RSpec.describe 'EmergencyContacts', type: :request do
 
     context '未認証ユーザーが削除を試みた場合' do
       before do
-        delete "/api/emergency_contacts/#{emergency_contact.id}", headers: {}
+        delete "/api/emergency_contacts/#{emergency_contact.id}", headers: unauthorized_header
       end
 
       it 'ステータスコード 401 を返す' do
