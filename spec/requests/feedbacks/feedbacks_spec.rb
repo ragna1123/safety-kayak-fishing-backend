@@ -4,14 +4,19 @@ require 'rails_helper'
 
 RSpec.describe FeedbacksController, type: :request do
   let(:user) { create(:user) }
-  let(:headers) { valid_headers(user) }
+  let(:token) { create_token_for(user) }
+  let(:unauthorized_header){{ 'Cookie' => "jwt=#{""}" }}
+
+  before do
+    set_jwt_cookies(token)
+  end
 
   describe 'POST /api/feedbacks' do
     let(:valid_params) { { feedback: attributes_for(:feedback) } }
 
     context 'リクエストが有効な場合' do
       before do
-        post '/api/feedbacks', params: valid_params, headers:
+        post '/api/feedbacks', params: valid_params
       end
 
       it 'フィードバックが作成されること' do
@@ -24,7 +29,7 @@ RSpec.describe FeedbacksController, type: :request do
 
     context 'リクエストが無効な場合' do
       before do
-        post '/api/feedbacks', params: { feedback: { title: '', comment: '' } }, headers:
+        post '/api/feedbacks', params: { feedback: { title: '', comment: '' } }
       end
 
       it 'ステータスコード422が返されること' do
@@ -37,7 +42,7 @@ RSpec.describe FeedbacksController, type: :request do
 
     context 'ユーザーが未認証の場合' do
       before do
-        post '/api/feedbacks', params: valid_params, headers: {}
+        post '/api/feedbacks', params: valid_params, headers: unauthorized_header
       end
 
       it 'ステータスコード401が返されること' do

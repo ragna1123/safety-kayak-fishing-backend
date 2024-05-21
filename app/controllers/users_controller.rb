@@ -19,7 +19,8 @@ class UsersController < ApplicationController
     if user&.authenticate(user_params[:password])
       token = jwt_create_token(user)
 
-      cookies.signed[:jwt] = { value: token, expires: 1.month.from_now, httponly: true}
+      # HTTP Onlyクッキーにトークンを保存
+      cookies[:jwt] = { value: token, expires: 1.month.from_now, httponly: true}
       render json: { user: }, status: :ok
     else
       render json: { status: 'error', message: 'メールアドレスまたはパスワードが正しくありません' }, status: :unauthorized
@@ -28,14 +29,13 @@ class UsersController < ApplicationController
 
   # ユーザー情報取得 API GET /api/users
   def show
-    user = @current_user
-    if user
+    if @current_user
       render json: {
         user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          profile_image_url: user.profile_image_url
+          id: @current_user.id,
+          username: @current_user.username,
+          email: @current_user.email,
+          profile_image_url: @current_user.profile_image_url
         }
       }, status: :ok
     else

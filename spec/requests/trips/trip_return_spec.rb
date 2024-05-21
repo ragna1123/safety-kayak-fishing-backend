@@ -4,10 +4,15 @@ require 'rails_helper'
 
 RSpec.describe TripReturnsController, type: :request do
   let(:user) { create(:user) }
-  let(:headers) { valid_headers(user) }
+  let(:token) { create_token_for(user) }
+  let(:unauthorized_header){{ 'Cookie' => "jwt=#{""}" }}
   let(:active_trip) { create(:trip, user:, departure_time: 2.hours.ago, estimated_return_time: 1.hour.from_now) }
   let(:inactive_trip) do
     create(:trip, user:, departure_time: 1.hours.from_now, estimated_return_time: 2.hours.from_now)
+  end
+
+  before do
+    set_jwt_cookies(token)
   end
 
   describe 'GET /api/trips/returned' do
@@ -15,7 +20,7 @@ RSpec.describe TripReturnsController, type: :request do
       let!(:returned_trip) { create(:trip, user:, return_time: Time.zone.now - 1.day) }
 
       before do
-        get '/api/trips/returned', headers:
+        get '/api/trips/returned'
       end
 
       it '帰投報告のトリップ一覧が返される' do
@@ -28,7 +33,7 @@ RSpec.describe TripReturnsController, type: :request do
 
     context '帰投報告が存在しない場合' do
       before do
-        get '/api/trips/returned', headers:
+        get '/api/trips/returned'
       end
 
       it '適切なメッセージが返される' do
@@ -41,10 +46,10 @@ RSpec.describe TripReturnsController, type: :request do
 
   describe 'GET /api/trips/unreturned' do
     context '未帰投報告が存在する場合' do
-      let!(:returned_trip) { create(:trip, user:, return_time: nil) }
+      let!(:returned_trip) { create(:trip, user:, return_time: nil, departure_time: 2.hours.ago, estimated_return_time: 1.hours.ago) }
 
       before do
-        get '/api/trips/unreturned', headers:
+        get '/api/trips/unreturned'
       end
 
       it '未帰投報告のトリップ一覧が返される' do
@@ -57,7 +62,7 @@ RSpec.describe TripReturnsController, type: :request do
 
     context '未帰投報告が存在しない場合' do
       before do
-        get '/api/trips/unreturned', headers:
+        get '/api/trips/unreturned'
       end
 
       it '適切なメッセージが返される' do
@@ -73,8 +78,7 @@ RSpec.describe TripReturnsController, type: :request do
       let(:return_details) { '無事帰還しました' }
 
       before do
-        put "/api/trips/#{active_trip.id}/return", params: { trip: { return_details: } },
-                                                   headers:
+        put "/api/trips/#{active_trip.id}/return", params: { trip: { return_details: } }
       end
 
       it '帰投報告が更新される' do
@@ -88,7 +92,7 @@ RSpec.describe TripReturnsController, type: :request do
 
     context 'トリップが出航していない場合' do
       before do
-        put "/api/trips/#{inactive_trip.id}/return", params: { trip: { return_details: '無事帰還しました' } }, headers:
+        put "/api/trips/#{inactive_trip.id}/return", params: { trip: { return_details: '無事帰還しました' } }
       end
 
       it '帰投報告が更新されない' do

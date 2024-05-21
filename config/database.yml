@@ -1,4 +1,4 @@
-# PostgreSQL 
+# PostgreSQL
 default: &default
   adapter: postgresql
   encoding: utf8
@@ -6,14 +6,16 @@ default: &default
   username: <%= ENV.fetch('POSTGRES_USER', 'haga') %>
   password: <%= ENV.fetch('POSTGRES_PASSWORD', '1123haga') %>
   host: <%= ENV.fetch('POSTGRES_HOST', 'localhost') %>
-  database: <%= ENV.fetch('POSTGRES_DB', 'myapp_development') %>
   port: <%= ENV.fetch('POSTGRES_PORT', 5432) %>
 
 development:
   <<: *default
+  database: <%= ENV.fetch('POSTGRES_DB', 'myapp_development') %>
 
 test:
   <<: *default
+  database: <%= ENV.fetch('POSTGRES_DB', 'myapp_test') %>
 
 production:
   <<: *default
+  database: <%= ENV.fetch('POSTGRES_DB', 'myapp_production') %>

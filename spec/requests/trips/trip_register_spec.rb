@@ -4,7 +4,8 @@ require 'rails_helper'
 
 RSpec.describe TripsController, type: :request do
   let(:user) { create(:user) }
-  let(:headers) { valid_headers(user) } # valid_headersは、有効な認証トークンを含むヘッダーを返すヘルパーメソッドを想定
+  let(:token) { create_token_for(user) }
+  let(:unauthorized_header){{ 'Cookie' => "jwt=#{""}" }}
   let(:location) { create(:location) }
   let(:valid_attributes) do
     {
@@ -17,11 +18,15 @@ RSpec.describe TripsController, type: :request do
       }
     }
   end
+  
+  before do
+    set_jwt_cookies(token)
+  end
 
   describe 'POST /api/trips' do
     context 'リクエストが有効な場合' do
       before do
-        post '/api/trips', params: { trip: valid_attributes }, headers:
+        post '/api/trips', params: { trip: valid_attributes }
       end
 
       it '出船予定を作成する' do
@@ -31,7 +36,7 @@ RSpec.describe TripsController, type: :request do
 
     context '位置情報が無い場合' do
       before do
-        post '/api/trips', params: { trip: valid_attributes.except(:location_data) }, headers:
+        post '/api/trips', params: { trip: valid_attributes.except(:location_data) }
       end
 
       it 'ステータスコード 422 を返す' do
@@ -42,7 +47,7 @@ RSpec.describe TripsController, type: :request do
 
     context 'ユーザーが未認証の場合' do
       before do
-        post '/api/trips', params: { trip: valid_attributes }, headers: {}
+        post '/api/trips', params: { trip: valid_attributes }, headers: unauthorized_header
       end
 
       it 'ステータスコード 401 を返す' do
@@ -64,7 +69,7 @@ RSpec.describe TripsController, type: :request do
       end
 
       before do
-        post '/api/trips', params: { trip: invalid_time_attributes }, headers:
+        post '/api/trips', params: { trip: invalid_time_attributes }
       end
 
       it 'ステータスコード 422 を返す' do
@@ -85,7 +90,7 @@ RSpec.describe TripsController, type: :request do
       end
 
       before do
-        post '/api/trips', params: { trip: no_time_attributes }, headers:
+        post '/api/trips', params: { trip: no_time_attributes }
       end
 
       it 'ステータスコード 422 を返す' do
@@ -107,7 +112,7 @@ RSpec.describe TripsController, type: :request do
         }
       end
       before do
-        post '/api/trips', params: { trip: past_time_attributes }, headers:
+        post '/api/trips', params: { trip: past_time_attributes }
       end
 
       it 'ステータスコード 422 を返す' do
@@ -129,10 +134,10 @@ RSpec.describe TripsController, type: :request do
 
       before do
         # 最初に有効な出船予定を作成
-        post('/api/trips', params: { trip: valid_attributes }, headers:)
+        post('/api/trips', params: { trip: valid_attributes })
 
         # 重複する出船予定を作成しようとする
-        post '/api/trips', params: { trip: overlapping_attributes }, headers:
+        post '/api/trips', params: { trip: overlapping_attributes }
       end
 
       it '新しい出船予定は作成されない' do

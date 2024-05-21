@@ -4,10 +4,10 @@ require 'rails_helper'
 
 RSpec.describe TripsController, type: :request do
   let(:user) { create(:user) }
-  let(:headers) { valid_headers(user) }
+  let(:token) { create_token_for(user) }
+  let(:unauthorized_header){{ 'Cookie' => "jwt=#{""}" }}
   let(:location) { create(:location) }
   let(:trip) { create(:trip, user:, location:) }
-
   let(:new_attributes) do
     {
       departure_time: Time.zone.now + 9.hours,
@@ -20,10 +20,14 @@ RSpec.describe TripsController, type: :request do
     }
   end
 
+  before do
+    set_jwt_cookies(token)
+  end
+
   describe 'PUT /api/trips/:id' do
     context 'リクエストが有効な場合' do
       before do
-        put "/api/trips/#{trip.id}", params: { trip: new_attributes }, headers:
+        put "/api/trips/#{trip.id}", params: { trip: new_attributes }
       end
 
       it '出船予定を更新し、成功メッセージを返す' do
@@ -37,7 +41,7 @@ RSpec.describe TripsController, type: :request do
       let(:other_users_trip) { create(:trip, user: other_user) }
 
       before do
-        put "/api/trips/#{other_users_trip.id}", params: { trip: new_attributes }, headers:
+        put "/api/trips/#{other_users_trip.id}", params: { trip: new_attributes }
       end
 
       it 'ステータスコード403を返し、アクセスを拒否する' do
@@ -54,7 +58,7 @@ RSpec.describe TripsController, type: :request do
 
       before do
         overlapping_trip # 重複するトリップを事前に作成
-        put "/api/trips/#{trip.id}", params: { trip: new_attributes }, headers:
+        put "/api/trips/#{trip.id}", params: { trip: new_attributes }
       end
 
       it '出船予定は更新されず、エラーメッセージを返す' do
