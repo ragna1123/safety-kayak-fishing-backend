@@ -25,13 +25,26 @@ jobs:
     steps:
       - uses: actions/checkout@v2 # リポジトリのコードをチェックアウト
 
-      - name: List directories
-        run: ls -la
-
       # Docker Compose を使ってサービスをデタッチドモードで起動
       - name: Set up Docker Compose
         run: |
           docker-compose -f docker-compose.yml up -d
+
+      # Docker-compose ps でサービスの状態を確認
+      - name: Check Docker Compose
+        run: docker-compose ps
+
+      # データベースが利用可能になるまで待機
+      - name: Wait for Database to be ready
+        run: |
+          until docker-compose exec db pg_isready -U ${{ env.POSTGRES_USER }} -h localhost; do
+            echo "Waiting for database to be ready..."
+            sleep 1
+          done
+
+      # 環境変数を設定
+      - name: Set up environment variables
+        run: echo "RAILS_ENV=test" >> $GITHUB_ENV
 
       # データベースマイグレーションを実行
       - name: Prepare database
@@ -43,5 +56,11 @@ jobs:
         run: |
           docker-compose exec app bundle exec rspec
 
+      # サービスの状態を確認し、ログを出力する
+      - name: Output Docker Compose logs
+        if: failure() # ステップが失敗した後で実行
+        run: docker-compose logs
+
+      # すべてのサービスをシャットダウン
       - name: Shutdown
-        run: docker-compose down # すべてのサービスをシャットダウン
+        run: docker-compose down
