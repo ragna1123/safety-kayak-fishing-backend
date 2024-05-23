@@ -21,6 +21,11 @@ jobs:
           POSTGRES_DB: myapp_test # テスト用のデータベース名
         ports:
           - 5432:5432 # ホストとコンテナ間で5432ポートをマッピング
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v2 # リポジトリのコードをチェックアウト
@@ -33,14 +38,6 @@ jobs:
       # Docker-compose ps でサービスの状態を確認
       - name: Check Docker Compose
         run: docker-compose ps
-
-      # データベースが利用可能になるまで待機
-      - name: Wait for Database to be ready
-        run: |
-          until docker-compose exec db pg_isready -U ${{ env.POSTGRES_USER }} -h localhost; do
-            echo "Waiting for database to be ready..."
-            sleep 1
-          done
 
       # 環境変数を設定
       - name: Set up environment variables
