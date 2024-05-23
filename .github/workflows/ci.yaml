@@ -28,11 +28,9 @@ jobs:
       - name: List directories
         run: ls -la
 
+      # Docker Compose を使ってサービスをデタッチドモードで起動
       - name: Set up Docker Compose
-        # Docker Compose ファイルがあるディレクトリに移動
-        # Docker Compose を使ってサービスをデタッチドモードで起動
         run: |
-          cd safety-kayak-fishing-backend
           docker-compose -f docker-compose.yml up -d
 
       # データベースマイグレーションを実行
