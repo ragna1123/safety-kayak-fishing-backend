@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main # main ブランチへのプルリクエスト時に実行
+
 jobs:
   ci:
     runs-on: ubuntu-latest # ジョブは最新のUbuntuランナー上で実行される
