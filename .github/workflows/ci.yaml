@@ -18,7 +18,7 @@ jobs:
         image: postgres:13 # 使用するPostgreSQLのDockerイメージ
         env:
           RAILS_ENV: test
-          POSTGRES_HOST: db
+          POSTGRES_HOST: 127.0.0.1
           POSTGRES_USER: haga
           POSTGRES_PASSWORD: 1123haga
           POSTGRES_DB: myapp_test
