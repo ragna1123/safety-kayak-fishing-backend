@@ -15,7 +15,6 @@ development:
 test:
   <<: *default
   database: <%= ENV.fetch('POSTGRES_DB', 'myapp_test') %>
-  host: <%= ENV.fetch('POSTGRES_HOST', 'db') %> # GitHubActionsのCI.yml で定義したサービス名
 
 production:
   <<: *default
