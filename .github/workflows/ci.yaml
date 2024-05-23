@@ -1,41 +1,42 @@
 name: safety-kayak-fishing-api-ci
+
 on:
   push:
     branches:
-      - main
+      - main # main ブランチへのプッシュ時に実行
   pull_request:
     branches:
-      - main
+      - main # main ブランチへのプルリクエスト時に実行
+
 jobs:
   ci:
-    runs-on:
-      ubuntu-latest
-      # BDを用意
+    runs-on: ubuntu-latest # ジョブは最新のUbuntuランナー上で実行される
+
     services:
       db:
-        image: postgres:13
+        image: postgres:13 # 使用するPostgreSQLのDockerイメージ
         env:
-          POSTGRES_USER: haga
-          POSTGRES_PASSWORD: 1123haga
-          POSTGRES_DB: safety_kayak_fishing_api_test
+          POSTGRES_USER: haga # PostgreSQLのユーザー名
+          POSTGRES_PASSWORD: 1123haga # PostgreSQLのパスワード
+          POSTGRES_DB: safety_kayak_fishing_api_test # テスト用のデータベース名
         ports:
-          - 5432:5432
+          - 5432:5432 # ホストとコンテナ間で5432ポートをマッピング
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2 # リポジトリのコードをチェックアウト
 
       - name: Set up Docker Compose
         run: |
-        cd safety-kayak-fishing-backend
-        docker-compose -f docker-compose.yml up -d
+          cd safety-kayak-fishing-backend  # Docker Compose ファイルがあるディレクトリに移動
+          docker-compose -f docker-compose.yml up -d  # Docker Compose を使ってサービスをデタッチドモードで起動
 
-      - name: rail db:migrate
+      - name: Prepare database
         run: |
-          docker-compose exec app bundle exec rails db:migrate
+          docker-compose exec app bundle exec rails db:migrate  # データベースマイグレーションを実行
 
       - name: Run tests
         run: |
-          docker-compose exec app bundle exec rspec
+          docker-compose exec app bundle exec rspec  # RSpecを使ってテストを実行
 
       - name: Shutdown
-        run: docker-compose down
+        run: docker-compose down # すべてのサービスをシャットダウン
