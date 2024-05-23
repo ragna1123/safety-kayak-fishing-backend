@@ -1,0 +1,12 @@
+name: safety-kayak-fishing-api-ci
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  runs-on: ubuntu-latest
+  steps:
+    - run: echo "Hello, World!"
