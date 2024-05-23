@@ -8,6 +8,32 @@ on:
       - main
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    runs-on:
+      ubuntu-latest
+      # BDを用意
+    services:
+      db:
+        image: postgres:13
+        env:
+          POSTGRES_USER: haga
+          POSTGRES_PASSWORD: 1123haga
+          POSTGRES_DB: safety_kayak_fishing_api_test
+        ports:
+          - 5432:5432
+
     steps:
-      - run: echo "Hello, World!"
+      - uses: actions/checkout@v2
+
+      - name: Set up Docker Compose
+        run: docker-compose -f docker-compose.yml up -d
+
+      - name: rail db:migrate
+        run: |
+          docker-compose exec app bundle exec rails db:migrate
+
+      - name: Run tests
+        run: |
+          docker-compose exec app bundle exec rspec
+
+      - name: Shutdown
+        run: docker-compose down
