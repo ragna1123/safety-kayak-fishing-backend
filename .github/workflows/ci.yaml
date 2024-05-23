@@ -44,6 +44,10 @@ jobs:
       - name: Check Docker Compose
         run: docker-compose ps
 
+      # setup前にセットアップチェック
+      - name: Check
+        run: docker-compose exec -T app bundle exec rails db:setup
+
       # データベースマイグレーションを実行
       - name: Prepare database
         run: docker-compose exec -T app bundle exec rails db:migrate

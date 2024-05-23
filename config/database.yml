@@ -14,7 +14,7 @@ development:
 
 test:
   <<: *default
-  database: <%= ENV.fetch('POSTGRES_DB', 'myapp_test') %>
+  url: <%= ENV.fetch('POSTGRES_URL', 'postgres://haga:1123haga@localhost:5432/myapp_test') %>
 
 production:
   <<: *default
