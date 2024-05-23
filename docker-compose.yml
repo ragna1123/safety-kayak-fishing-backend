@@ -8,10 +8,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
       - redis
     environment:
-      POSTGRES_HOST: db
       POSTGRES_USER: haga
       POSTGRES_PASSWORD: 1123haga
       REDIS_URL: redis://redis:6379/0
