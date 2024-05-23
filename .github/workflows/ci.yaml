@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest # ジョブは最新のUbuntuランナー上で実行される
     env:
       RAILS_ENV: test # 環境変数RAILS_ENVをtestに設定
+      STORM_GLASS_API_KEY: ${{secrets.STORM_GLASS_API_KEY}}
+      LINE_MESSAGE_API_KEY: ${{secrets.LINE_MESSAGE_API_KEY}}
       # サービスコンテナでDBを用意
 
     steps:
@@ -25,6 +27,10 @@ jobs:
       # Docker-compose ps でサービスの状態を確認
       - name: Check Docker Compose
         run: docker-compose ps
+
+      # master.key を作成
+      - name: Create master.key
+        run: echo ${{secrets.RAILS_MASTER_KEY}} > config/master.key
 
       # データベースマイグレーションを実行
       - name: Prepare database
