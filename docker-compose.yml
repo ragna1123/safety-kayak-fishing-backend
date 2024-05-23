@@ -33,6 +33,7 @@ services:
       POSTGRES_USER: haga
       POSTGRES_PASSWORD: 1123haga
       REDIS_URL: redis://redis:6379/0
+      RAILS_ENV: test
 
 volumes:
   postgres-data:
