@@ -18,7 +18,7 @@ jobs:
         env:
           POSTGRES_USER: haga # PostgreSQLのユーザー名
           POSTGRES_PASSWORD: 1123haga # PostgreSQLのパスワード
-          POSTGRES_DB: myapp_development # テスト用のデータベース名
+          POSTGRES_DB: myapp_test # テスト用のデータベース名
           POSTGRES_HOST: localhost # ホスト名
         ports:
           - 5432:5432 # ホストとコンテナ間で5432ポートをマッピング
@@ -40,9 +40,9 @@ jobs:
       - name: Check Docker Compose
         run: docker-compose ps
 
-      # 環境変数を設定
-      - name: Set up environment variables
-        run: echo "RAILS_ENV=test" >> $GITHUB_ENV
+      # テスト環境へ切り替え
+      - name: Switch to test environment
+        run: docker-compose exec -T app bundle exec rails db:environment:set RAILS_ENV=test
 
       # データベースマイグレーションを実行
       - name: Prepare database
