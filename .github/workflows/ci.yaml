@@ -14,25 +14,8 @@ jobs:
     env:
       RAILS_ENV: test # 環境変数RAILS_ENVをtestに設定
       # サービスコンテナでDBを用意
-    services:
-      db:
-        image: postgres:13 # 使用するPostgreSQLのDockerイメージ
-        env:
-          POSTGRES_USER: haga
-          POSTGRES_PASSWORD: 1123haga
-          POSTGRES_DB: myapp_test
-        ports:
-          - 5432:5432 # ホストとコンテナ間で5432ポートをマッピング
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
-      - name: db-healthcheck
-        run: docker run --network host --rm postgres:13 pg_isready -h localhost -U haga -d myapp_test
-
       - uses: actions/checkout@v2 # リポジトリのコードをチェックアウト
 
       # Docker Compose を使ってサービスをデタッチドモードで起動
