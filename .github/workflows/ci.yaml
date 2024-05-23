@@ -25,18 +25,25 @@ jobs:
     steps:
       - uses: actions/checkout@v2 # リポジトリのコードをチェックアウト
 
-      - name: Set up Docker Compose
-        run: |
-          cd safety-kayak-fishing-backend  # Docker Compose ファイルがあるディレクトリに移動
-          docker-compose -f docker-compose.yml up -d  # Docker Compose を使ってサービスをデタッチドモードで起動
+      - name: List directories
+        run: ls -la
 
+      - name: Set up Docker Compose
+        # Docker Compose ファイルがあるディレクトリに移動
+        # Docker Compose を使ってサービスをデタッチドモードで起動
+        run: |
+          cd safety-kayak-fishing-backend
+          docker-compose -f docker-compose.yml up -d
+
+      # データベースマイグレーションを実行
       - name: Prepare database
         run: |
-          docker-compose exec app bundle exec rails db:migrate  # データベースマイグレーションを実行
+          docker-compose exec app bundle exec rails db:migrate
 
+      # RSpecを使ってテストを実行
       - name: Run tests
         run: |
-          docker-compose exec app bundle exec rspec  # RSpecを使ってテストを実行
+          docker-compose exec app bundle exec rspec
 
       - name: Shutdown
         run: docker-compose down # すべてのサービスをシャットダウン
