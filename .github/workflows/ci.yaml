@@ -19,6 +19,7 @@ jobs:
           POSTGRES_USER: haga # PostgreSQLのユーザー名
           POSTGRES_PASSWORD: 1123haga # PostgreSQLのパスワード
           POSTGRES_DB: myapp_test # テスト用のデータベース名
+          POSTGRES_HOST: localhost # ホスト名
         ports:
           - 5432:5432 # ホストとコンテナ間で5432ポートをマッピング
         options: >-
