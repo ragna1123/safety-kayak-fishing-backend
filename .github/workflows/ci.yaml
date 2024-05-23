@@ -45,13 +45,12 @@ jobs:
 
       # データベースマイグレーションを実行
       - name: Prepare database
-        run: |
-          docker-compose exec app bundle exec rails db:migrate
+        run: docker-compose exec -T app bundle exec rails db:migrate
 
       # RSpecを使ってテストを実行
       - name: Run tests
         run: |
-          docker-compose exec app bundle exec rspec
+          docker-compose exec -T app bundle exec rspec
 
       # サービスの状態を確認し、ログを出力する
       - name: Output Docker Compose logs
