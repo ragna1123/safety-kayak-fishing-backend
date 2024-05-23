@@ -17,10 +17,11 @@ jobs:
       db:
         image: postgres:13 # 使用するPostgreSQLのDockerイメージ
         env:
-          POSTGRES_HOST: 127.0.0.1 # PostgreSQLのホスト名
-          POSTGRES_USER: haga # PostgreSQLのユーザー名
-          POSTGRES_PASSWORD: 1123haga # PostgreSQLのパスワード
-          POSTGRES_DB: myapp_test # テスト用のデータベース名
+          RAILS_ENV: test
+          POSTGRES_HOST: db
+          POSTGRES_USER: haga
+          POSTGRES_PASSWORD: 1123haga
+          POSTGRES_DB: myapp_test
         ports:
           - 5432:5432 # ホストとコンテナ間で5432ポートをマッピング
         options: >-
