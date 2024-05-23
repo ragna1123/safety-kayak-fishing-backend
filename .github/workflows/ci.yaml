@@ -40,10 +40,6 @@ jobs:
       - name: Check Docker Compose
         run: docker-compose ps
 
-      # テスト環境へ切り替え
-      - name: Switch to test environment
-        run: docker-compose exec -T app bundle exec rails db:environment:set RAILS_ENV=test
-
       # データベースマイグレーションを実行
       - name: Prepare database
         run: docker-compose exec -T app bundle exec rails db:migrate

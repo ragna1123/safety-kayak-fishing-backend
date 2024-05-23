@@ -11,9 +11,8 @@ services:
     depends_on:
       - redis
     environment:
-      POSTGRES_USER: haga
-      POSTGRES_PASSWORD: 1123haga
       REDIS_URL: redis://redis:6379/0
+      RAILS_ENV: test
 
   redis:
     image: redis:7.2.4-alpine
