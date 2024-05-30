@@ -16,7 +16,7 @@ jobs:
       STORM_GLASS_API_KEY: ${{secrets.STORM_GLASS_API_KEY}}
       LINE_MESSAGE_API_KEY: ${{secrets.LINE_MESSAGE_API_KEY}}
 
-    Rspec_test:
+    steps:
       - uses: actions/checkout@v2 # リポジトリのコードをチェックアウト
 
       # Docker Compose を使ってサービスをデタッチドモードで起動
@@ -24,29 +24,28 @@ jobs:
         run: |
           docker-compose -f docker-compose.yml up -d
 
-      - steps:
-          # Docker-compose ps でサービスの状態を確認
-          - name: Check Docker Compose
-            run: docker-compose ps
+      # Docker-compose ps でサービスの状態を確認
+      - name: Check Docker Compose
+        run: docker-compose ps
 
-          # master.key を作成
-          - name: Create master.key
-            run: echo ${{secrets.RAILS_MASTER_KEY}} > config/master.key
+      # master.key を作成
+      - name: Create master.key
+        run: echo ${{secrets.RAILS_MASTER_KEY}} > config/master.key
 
-          # データベースマイグレーションを実行
-          - name: Prepare database
-            run: docker-compose exec -T app bundle exec rails db:migrate
+      # データベースマイグレーションを実行
+      - name: Prepare database
+        run: docker-compose exec -T app bundle exec rails db:migrate
 
-          # RSpecを使ってテストを実行
-          - name: Run tests
-            run: |
-              docker-compose exec -T app bundle exec rspec
+      # RSpecを使ってテストを実行
+      - name: Run tests
+        run: |
+          docker-compose exec -T app bundle exec rspec
 
-          # サービスの状態を確認し、ログを出力する
-          - name: Output Docker Compose logs
-            if: failure() # ステップが失敗した後で実行
-            run: docker-compose logs
+      # サービスの状態を確認し、ログを出力する
+      - name: Output Docker Compose logs
+        if: failure() # ステップが失敗した後で実行
+        run: docker-compose logs
 
-          # すべてのサービスをシャットダウン
-          - name: Shutdown
-            run: docker-compose down
+      # すべてのサービスをシャットダウン
+      - name: Shutdown
+        run: docker-compose down
