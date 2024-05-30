@@ -37,4 +37,4 @@ jobs:
       # EC2にSSHしてDocker Composeを使ってデプロイ
       - name: Deploy to EC2 on Docker Compose
         run: |
-          ssh ec2-user@${{secrets.EC2_PUBLIC_IP}} "cd safety-kayak-fishing-backend && docker-compose down && docker-compose pull && docker-compose up -d"
+          ssh -i {{secrets.EC2_SSH_KEY}} ec2-user@${{secrets.EC2_PUBLIC_IP}} "cd safety-kayak-fishing-backend && docker-compose down && docker-compose pull && docker-compose up -d"
