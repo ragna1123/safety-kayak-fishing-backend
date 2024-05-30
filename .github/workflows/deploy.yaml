@@ -1,0 +1,39 @@
+name: aws_deploy
+
+on:
+  push:
+    branches:
+      - main # main ブランチへのプッシュ時に実行
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest # ジョブは最新のUbuntuランナー上で実行される
+    env:
+      AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+      AWS_REGION: ap-northeast-1
+      AWS_ACCOUNT_ID: ${{secrets.AWS_ACCOUNT_ID}}
+      ECR_REPOSITORY: safety-kayak-fishing-api
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # CDのためのDockerイメージをビルド
+      - name: Build Docker image
+        run: docker build -t safety-kayak-fishing-api .
+
+      # DockerイメージをECRにプッシュ
+      - name: Push Docker image to ECR
+        run: |
+          echo ${{secrets.AWS_ACCESS_KEY_ID}} > aws_access_key_id
+          echo ${{secrets.AWS_SECRET_ACCESS_KEY}} > aws_secret_access_key
+          docker login -u AWS -p $(aws ecr get-login-password --region ${{ env.AWS_REGION }}) ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+          docker tag safety-kayak-fishing-api:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/safety-kayak-fishing-api:latest
+          docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/safety-kayak-fishing-api:latest
+      # AWS ECRにログインしているので、ログアウト
+      - name: Logout from ECR
+        run: docker logout ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+
+      - name: Deploy to EC2 on Docker Compose
+        run: |
+          ssh -i ec2-user@${{secrets.EC2_PUBLIC_IP}} "cd safety-kayak-fishing-backend && docker-compose down && docker-compose pull && docker-compose up -d"

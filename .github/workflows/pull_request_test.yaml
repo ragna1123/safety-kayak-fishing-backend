@@ -1,4 +1,4 @@
-name: safety-kayak-fishing-api-ci
+name: Rspec_test
 
 on:
   push:
@@ -9,15 +9,14 @@ on:
       - main # main ブランチへのプルリクエスト時に実行
 
 jobs:
-  ci:
+  test:
     runs-on: ubuntu-latest # ジョブは最新のUbuntuランナー上で実行される
     env:
       RAILS_ENV: test # 環境変数RAILS_ENVをtestに設定
       STORM_GLASS_API_KEY: ${{secrets.STORM_GLASS_API_KEY}}
       LINE_MESSAGE_API_KEY: ${{secrets.LINE_MESSAGE_API_KEY}}
-      # サービスコンテナでDBを用意
 
-    steps:
+    Rspec_test:
       - uses: actions/checkout@v2 # リポジトリのコードをチェックアウト
 
       # Docker Compose を使ってサービスをデタッチドモードで起動
