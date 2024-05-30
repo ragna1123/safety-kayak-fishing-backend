@@ -34,7 +34,15 @@ jobs:
       - name: Logout from ECR
         run: docker logout ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
+      # EC2にSSH接続するためにRSAファイルを作成
+        - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
+
       # EC2にSSHしてDocker Composeを使ってデプロイ
       - name: Deploy to EC2 on Docker Compose
         run: |
-          ssh -i {{secrets.EC2_SSH_KEY}} ec2-user@${{secrets.EC2_PUBLIC_IP}} "cd safety-kayak-fishing-backend && docker-compose down && docker-compose pull && docker-compose up -d"
+          ssh -i ~/.ssh/id_rsa ec2-user@${{secrets.EC2_PUBLIC_IP}} "cd safety-kayak-fishing-backend && docker-compose down && docker-compose pull && docker-compose up -d"
