@@ -1,9 +1,6 @@
 name: Rspec_test
 
 on:
-  push:
-    branches:
-      - main # main ブランチへのプッシュ時に実行
   pull_request:
     branches:
       - main # main ブランチへのプルリクエスト時に実行
