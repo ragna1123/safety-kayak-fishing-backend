@@ -70,15 +70,18 @@ jobs:
           # SSHのセキュリティグループを開放する
           aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
-          # SSH接続して、docker-composeでデプロイ
-          echo -e "${{ secrets.PRIVATE_KEY }}" > private_key
-          chmod 600 private_key
+          # SSHディレクトリを作成
+          mkdir -p ~/.ssh
+
+          # 秘密鍵を設定
+          echo -e "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/private_key
+          chmod 600 ~/.ssh/private_key
 
           # ホストを known_hosts に追加
           ssh-keyscan -H ${{ secrets.EC2_HOST_NAME }} >> ~/.ssh/known_hosts
 
-          #　ここからdocker-compose でのデプロイを作成
-          ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd safety-kayak-fishing-backend && docker-compose -f docker-compose.production.yml down && docker-compose -f docker-compose.production.yml up -d"
+          # Docker Compose でのデプロイを実行
+          ssh -oStrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "cd safety-kayak-fishing-backend && docker-compose -f docker-compose.production.yml down && docker-compose -f docker-compose.production.yml up -d"
 
           # SSHのセキュリティグループを閉じる
           aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
