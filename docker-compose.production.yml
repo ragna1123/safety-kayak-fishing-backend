@@ -8,7 +8,7 @@ services:
       - "6379:6379"
 
   app:
-    build: .
+    image: 680950831771.dkr.ecr.ap-northeast-1.amazonaws.com/safety-kayak-fishing-api:latest
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
     volumes:
       - .:/myapp
@@ -28,6 +28,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./logs:/var/log/nginx
     depends_on:
       - app
 

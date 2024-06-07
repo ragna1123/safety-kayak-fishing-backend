@@ -75,7 +75,7 @@ jobs:
           chmod 600 private_key
 
           #　ここからdocker-compose でのデプロイを作成
-          ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "pwd"
+          ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd safety-kayak-fishing-backend && docker-compose -f docker-compose.production.yml down && docker-compose -f docker-compose.production.yml up -d"
 
           # SSHのセキュリティグループを閉じる
           aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
