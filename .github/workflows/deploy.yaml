@@ -76,7 +76,7 @@ jobs:
           echo "${{ secrets.PRIVATE_KEY }}" > private_key
           chmod 600 private_key
 
-          #　ここからdocker compose でのデプロイを作成
+          #　ここからdocker-compose でのデプロイを作成
           ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "pwd"
 
           # SSHのセキュリティグループを閉じる
