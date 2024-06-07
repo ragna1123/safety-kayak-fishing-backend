@@ -54,9 +54,7 @@ jobs:
       # DockerイメージをECRにプッシュ
       - name: Push Docker image to ECR
         run: |
-          echo ${{ secrets.AWS_ACCESS_KEY_ID }} > aws_access_key_id
-          echo ${{ secrets.AWS_SECRET_ACCESS_KEY }} > aws_secret_access_key
-          docker login -u AWS -p $(aws ecr get-login-password --region ${{ env.AWS_REGION }}) ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
           docker tag safety-kayak-fishing-api:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/safety-kayak-fishing-api:latest
           docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/safety-kayak-fishing-api:latest
 
@@ -74,7 +72,7 @@ jobs:
           aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
           # SSH接続して、docker-composeでデプロイ
-          echo "${{ secrets.PRIVATE_KEY }}" > private_key
+          echo -e "${{ secrets.PRIVATE_KEY }}" > private_key
           chmod 600 private_key
 
           #　ここからdocker-compose でのデプロイを作成
