@@ -77,9 +77,6 @@ jobs:
           echo -e "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/private_key
           chmod 600 ~/.ssh/private_key
 
-          # ホストを known_hosts に追加
-          ssh-keyscan -H ${{ secrets.EC2_HOST_NAME }} >> ~/.ssh/known_hosts
-
           # Docker Compose でのデプロイを実行
           ssh -oStrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "cd safety-kayak-fishing-backend && docker-compose -f docker-compose.production.yml down && docker-compose -f docker-compose.production.yml up -d"
 
