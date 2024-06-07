@@ -19,7 +19,7 @@ jobs:
       # Docker Compose を使ってサービスをデタッチドモードで起動
       - name: Set up Docker Compose
         run: |
-          docker-compose -f docker-compose.yml up -d
+          docker-compose -f docker-compose.test.yml up -d
 
       # Docker-compose ps でサービスの状態を確認
       - name: Check Docker Compose
