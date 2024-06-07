@@ -83,9 +83,11 @@ jobs:
           # Docker Compose のインストールを確認
           ssh -t -oStrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
             if ! [ -x "$(command -v docker)" ]; then
-              sudo amazon-linux-extras install docker -y
-              sudo service docker start
-              sudo usermod -a -G docker ec2-user
+              sudo apt update
+              sudo apt install -y docker.io
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              sudo usermod -aG docker $USER
             fi
 
             if ! [ -x "$(command -v docker-compose)" ]; then
