@@ -82,11 +82,10 @@ jobs:
 
           # Docker Compose のインストールを確認
           ssh -t -oStrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
-            if ! [ -x $(command -v docker-compose) ]; then
-              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
-              sudo chmod +x /usr/local/bin/docker-compose && \
-              sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-            fi
+              sudo mkdir -p /usr/local/lib/docker/cli-plugins
+              sudo curl -SL https://github.com/docker/compose/releases/download/v2.4.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
+              sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+              docker compose version
           EOF
 
           # Docker Compose でのデプロイを実行
