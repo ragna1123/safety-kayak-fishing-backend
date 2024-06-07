@@ -81,10 +81,20 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST_NAME }} >> ~/.ssh/known_hosts
 
           # Docker Compose のインストールを確認
-          ssh -oStrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "if ! [ -x \$(command -v docker-compose) ]; then sudo curl -L 'https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)' -o /usr/local/bin/docker-compose && \sudo chmod +x /usr/local/bin/docker-compose && \sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose fi"
+          ssh -oStrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
+            if ! [ -x $(command -v docker-compose) ]; then
+              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+              sudo chmod +x /usr/local/bin/docker-compose && \
+              sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+            fi
+          EOF
 
           # Docker Compose でのデプロイを実行
-          ssh -oStrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "cd safety-kayak-fishing-backend && docker-compose -f docker-compose.production.yml down && docker-compose -f docker-compose.production.yml up -d"
+          ssh -oStrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
+            cd safety-kayak-fishing-backend && \
+            docker-compose -f docker-compose.production.yml down && \
+            docker-compose -f docker-compose.production.yml up -d
+          EOF
 
           # SSHのセキュリティグループを閉じる
           aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
