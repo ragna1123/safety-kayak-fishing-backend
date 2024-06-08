@@ -92,8 +92,12 @@ jobs:
             fi
 
             if ! [ -x "$(command -v docker-compose)" ]; then
-              sudo curl -SL https://github.com/docker/compose/releases/download/v2.4.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
-              sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+              sudo curl -SL https://github.com/docker/compose/releases/download/v2.4.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+              # 既存のリンクを確認し、存在する場合は削除
+              if [ -L /usr/bin/docker-compose ]; then
+                sudo rm /usr/bin/docker-compose
+              fi
               sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
               
               # Docker Compose でのデプロイを実行
@@ -102,7 +106,6 @@ jobs:
               docker-compose -f docker-compose.production.yml up -d
             fi
           EOF
-
 
           # SSHのセキュリティグループを閉じる。
           aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
