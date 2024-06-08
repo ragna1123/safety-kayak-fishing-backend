@@ -95,15 +95,14 @@ jobs:
               sudo curl -SL https://github.com/docker/compose/releases/download/v2.4.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
               sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
               sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+              
+              # Docker Compose でのデプロイを実行
+              cd safety-kayak-fishing-backend && \
+              docker-compose -f docker-compose.production.yml down && \
+              docker-compose -f docker-compose.production.yml up -d
             fi
           EOF
 
-          # Docker Compose でのデプロイを実行
-          ssh -t -oStrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
-            cd safety-kayak-fishing-backend && \
-            docker-compose -f docker-compose.production.yml down && \
-            docker-compose -f docker-compose.production.yml up -d
-          EOF
 
           # SSHのセキュリティグループを閉じる。
           aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
