@@ -85,14 +85,16 @@ jobs:
             if ! [ -x "$(command -v docker)" ]; then
               sudo dnf install -y docker
               sudo systemctl start docker
+              sudo gpasswd -a $(whoami) docker
+              sudo chgrp docker /var/run/docker.sock
+              sudo service docker restart
               sudo systemctl enable docker
-              sudo usermod -aG docker ec2-user
             fi
 
             if ! [ -x "$(command -v docker-compose)" ]; then
-              sudo mkdir -p /usr/local/lib/docker/cli-plugins
               sudo curl -SL https://github.com/docker/compose/releases/download/v2.4.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
               sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+              sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
             fi
           EOF
 
