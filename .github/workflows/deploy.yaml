@@ -99,8 +99,10 @@ jobs:
                 sudo rm /usr/bin/docker-compose
               fi
               sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-              
-              # Docker Compose でのデプロイを実行
+            fi
+
+            # Docker Compose でのデプロイを実行
+            if [ -x "$(command -v docker-compose)" ]; then
               aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin 680950831771.dkr.ecr.ap-northeast-1.amazonaws.com
               docker pull 680950831771.dkr.ecr.ap-northeast-1.amazonaws.com/safety-kayak-fishing-api:latest
               # Docker Compose立ち上げ
