@@ -104,10 +104,9 @@ jobs:
             # Docker Compose でのデプロイを実行
             if [ -x "$(command -v docker-compose)" ]; then
               aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin 680950831771.dkr.ecr.ap-northeast-1.amazonaws.com
-              # <NONE>タグを削除
-              docker images -f "dangling=true" -q | xargs docker rmi
-              
               docker pull 680950831771.dkr.ecr.ap-northeast-1.amazonaws.com/safety-kayak-fishing-api:latest
+              # 古いイメージを削除
+              docker images -f "dangling=true" -q | xargs docker rmi
               # Docker Compose立ち上げ
               cd safety-kayak-fishing-backend && \
               docker-compose -f docker-compose.production.yml down && \
