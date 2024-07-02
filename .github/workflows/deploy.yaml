@@ -108,9 +108,9 @@ jobs:
             fi
 
             # certbotでSSL証明書を取得
-            if [ -x "$(command -v certbot)" ]; then
-              sudo certbot --nginx -d safety-kayak.com -d www.safety-kayak.com
-            fi
+            # if [ -x "$(command -v certbot)" ]; then
+            #   sudo certbot --nginx -d safety-kayak.com -d www.safety-kayak.com
+            # fi
 
             # Docker Compose でのデプロイを実行
             if [ -x "$(command -v docker-compose)" ]; then
