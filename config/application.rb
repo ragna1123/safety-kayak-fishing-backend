@@ -35,6 +35,6 @@ module SafetyKayakFishingBackend
     config.middleware.use ActionDispatch::Session::CookieStore, key: '_namespace_key'
     config.middleware.use ActionDispatch::Cookies
     config.middleware.use ActionDispatch::Flash
-    
+    config.action_dispatch.cookies_same_site_protection = :none # 追加
   end
 end

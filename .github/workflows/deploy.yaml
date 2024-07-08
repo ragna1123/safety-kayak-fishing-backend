@@ -1,13 +1,15 @@
-name: aws_deploy
+name: EC2 auto deploy
 
 on:
-  push:
-    branches:
-      - main # main ブランチへのプッシュ時に実行
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+  workflow_dispatch:
 
 jobs:
-  cd:
-    runs-on: ubuntu-latest # ジョブは最新のUbuntuランナー上で実行される
+  build:
+    runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -16,9 +18,33 @@ jobs:
       ECR_REPOSITORY: safety-kayak-fishing-api
 
     steps:
-      - name: Checkout code
+      # --- AWSへの接続設定 ---
+      # IP取得ライブラリをインストール
+      - name: Public IP Install
+        id: ip
+        uses: haythem/public-ip@v1.3
+
+      # BranchをCheckout
+      - name: Checkout
         uses: actions/checkout@v2
 
+      # AWS CLIをインストールする
+      - name: AWS CLI install
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+          aws --version
+
+      # AWS CLIにキーを設定をする
+      - name: AWS set Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      # ---   ここからdocker build  ---
       # CDのためのDockerイメージをビルド
       - name: Build Docker image
         run: docker build -t safety-kayak-fishing-api .
@@ -26,9 +52,7 @@ jobs:
       # DockerイメージをECRにプッシュ
       - name: Push Docker image to ECR
         run: |
-          echo ${{ secrets.AWS_ACCESS_KEY_ID }} > aws_access_key_id
-          echo ${{ secrets.AWS_SECRET_ACCESS_KEY }} > aws_secret_access_key
-          docker login -u AWS -p $(aws ecr get-login-password --region ${{ env.AWS_REGION }}) ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
           docker tag safety-kayak-fishing-api:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/safety-kayak-fishing-api:latest
           docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/safety-kayak-fishing-api:latest
 
@@ -36,15 +60,69 @@ jobs:
       - name: Logout from ECR
         run: docker logout ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
-      # EC2にSSH接続するためにRSAファイルを作成
-      - name: Setup SSH key
+      # ---   ここからEC2へのデプロイ  ---
+      # デプロイする
+      - name: Deploy
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
 
-      # EC2にSSHしてDocker Composeを使ってデプロイ
-      - name: Deploy to EC2 on Docker Compose
-        run: |
-          ssh -vvv -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_PUBLIC_IP }} "cd safety-kayak-fishing-backend && docker-compose down && docker-compose pull && docker-compose up -d"
+          # SSHのセキュリティグループを開放する
+          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
+          # SSHディレクトリを作成
+          mkdir -p ~/.ssh
+
+          # 秘密鍵を設定
+          echo -e "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/private_key
+          chmod 600 ~/.ssh/private_key
+
+          # ホストを known_hosts に追加
+          ssh-keyscan -H ${{ secrets.EC2_HOST_NAME }} >> ~/.ssh/known_hosts
+
+          # Docker Compose のインストールを確認
+          ssh -t -oStrictHostKeyChecking=no  -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
+            if ! [ -x "$(command -v docker)" ]; then
+              sudo dnf install -y docker
+              sudo systemctl start docker
+              sudo gpasswd -a $(whoami) docker
+              sudo chgrp docker /var/run/docker.sock
+              sudo service docker restart
+              sudo systemctl enable docker
+            fi
+
+            if ! [ -x "$(command -v docker-compose)" ]; then
+              sudo curl -SL https://github.com/docker/compose/releases/download/v2.4.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+              # 既存のリンクを確認し、存在する場合は削除
+              if [ -L /usr/bin/docker-compose ]; then
+                sudo rm /usr/bin/docker-compose
+              fi
+              sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+            fi
+
+            # epel cretbotをインストール
+            if ! [ -x "$(command -v certbot)" ]; then
+              sudo dnf install -y epel-release
+              sudo dnf install -y certbot python3-certbot-nginx
+            fi
+
+            # certbotでSSL証明書を取得
+            if [ -x "$(command -v certbot)" ]; then
+              sudo certbot --nginx -d safety-kayak.com -d www.safety-kayak.com
+            fi
+
+            # Docker Compose でのデプロイを実行
+            if [ -x "$(command -v docker-compose)" ]; then
+              aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+              docker pull 680950831771.dkr.ecr.ap-northeast-1.amazonaws.com/safety-kayak-fishing-api:latest
+              # 古いイメージを削除
+              docker images -f "dangling=true" -q | xargs docker rmi
+              # Docker Compose立ち上げ
+              cd safety-kayak-fishing-backend && \
+              docker-compose -f docker-compose.production.yml down && \
+              docker-compose -f docker-compose.production.yml up -d
+              docker-compose -f docker-compose.production.yml ps
+
+          EOF
+
+          # SSHのセキュリティグループを閉じる
+          aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
