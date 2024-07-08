@@ -20,7 +20,7 @@ class UsersController < ApplicationController
       token = jwt_create_token(user)
 
       # HTTP Onlyクッキーにトークンを保存
-      cookies[:jwt] = { value: token, expires: 1.month.from_now, httponly: true}
+      cookies[:jwt] = { value: token, expires: 1.month.from_now, httponly: true, secure: true}
       render json: { user: }, status: :ok
     else
       render json: { status: 'error', message: 'メールアドレスまたはパスワードが正しくありません' }, status: :unauthorized
