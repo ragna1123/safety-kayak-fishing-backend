@@ -31,18 +31,18 @@ jobs:
 
       # データベースマイグレーションを実行
       - name: Prepare database
-        run: docker-compose exec -T app bundle exec rails db:migrate
+        run: docker-compose -f docker-compose.test.yml exec -T app bundle exec rails db:migrate
 
       # RSpecを使ってテストを実行
       - name: Run tests
         run: |
-          docker-compose exec -T app bundle exec rspec
+          docker-compose -f docker-compose.test.yml exec -T app bundle exec rspec
 
       # サービスの状態を確認し、ログを出力する
       - name: Output Docker Compose logs
         if: failure() # ステップが失敗した後で実行
-        run: docker-compose logs
+        run: docker-compose -f docker-compose.test.yml logs
 
       # すべてのサービスをシャットダウン
       - name: Shutdown
-        run: docker-compose down
+        run: docker-compose -f docker-compose.test.yml down
