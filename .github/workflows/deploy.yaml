@@ -78,14 +78,14 @@ jobs:
           # ホストを known_hosts に追加
           ssh-keyscan -H ${{ secrets.EC2_HOST_NAME }} >> ~/.ssh/known_hosts
 
-          # Docker Compose のインストールを確認
-          ssh -o StrictHostKeyChecking=no  -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
+          # Dockerのインストールと設定
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
             if ! [ -x "$(command -v docker)" ]; then
               sudo dnf install -y docker
               sudo systemctl start docker
               sudo gpasswd -a $(whoami) docker
               sudo chgrp docker /var/run/docker.sock
-              sudo service docker restart
+              sudo systemctl restart docker
               sudo systemctl enable docker
             fi
 
@@ -99,7 +99,7 @@ jobs:
               sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
             fi
 
-            # epel cretbotをインストール
+            # epel certbotをインストール
             if ! [ -x "$(command -v certbot)" ]; then
               sudo dnf install -y epel-release
               sudo dnf install -y certbot python3-certbot-nginx
@@ -107,7 +107,7 @@ jobs:
 
             # certbotでSSL証明書を取得
             if [ -x "$(command -v certbot)" ]; then
-              sudo certbot --nginx -d safety-kayak.com -d www.safety-kayak.com
+              sudo certbot --nginx -d safety-kayak-fishing.com -d www.safety-kayak-fishing.com
             fi
 
             # Docker Compose でのデプロイを実行
@@ -121,7 +121,7 @@ jobs:
               docker-compose -f docker-compose.production.yml down && \
               docker-compose -f docker-compose.production.yml up -d
               docker-compose -f docker-compose.production.yml ps
-
+            fi
           EOF
 
           # SSHのセキュリティグループを閉じる
