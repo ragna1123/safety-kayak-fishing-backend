@@ -79,7 +79,7 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST_NAME }} >> ~/.ssh/known_hosts
 
           # Docker Compose のインストールを確認
-          ssh -t -oStrictHostKeyChecking=no  -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no  -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
             if ! [ -x "$(command -v docker)" ]; then
               sudo dnf install -y docker
               sudo systemctl start docker
