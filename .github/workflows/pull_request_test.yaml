@@ -23,7 +23,7 @@ jobs:
 
       # Docker-compose ps でサービスの状態を確認
       - name: Check Docker Compose
-        run: docker-compose ps
+        run: docker-compose -f docker-compose.test.yml ps
 
       # master.key を作成
       - name: Create master.key
