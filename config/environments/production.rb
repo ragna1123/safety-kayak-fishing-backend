@@ -91,7 +91,7 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
   config.middleware.insert_before 0, Rack::Cors do
     allow do
-      origins 'https://safety-kayak.com' # プロダクション環境のオリジンを指定します
+      origins 'https://www.safety-kayak.com','https://safety-kayak.com'# プロダクション環境のオリジンを指定します
       resource '*',
         headers: :any,
         methods: [:get, :post, :put, :patch, :delete, :options, :head],
