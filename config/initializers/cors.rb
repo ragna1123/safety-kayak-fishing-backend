@@ -9,7 +9,7 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins 'http://localhost:3001' # クライアントのオリジンを指定します。
+    origins 'http://localhost:3001','https://www.safety-kayak.com','https://safety-kayak.com' # クライアントのオリジンを指定します。
 
     resource '*',
       headers: :any,
