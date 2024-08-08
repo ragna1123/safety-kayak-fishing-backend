@@ -10,6 +10,7 @@ Rails.application.routes.draw do
     resource :users, only: %i[create show update destroy] do
       collection do
         post 'login', action: :login # ユーザーログイン
+        delete 'logout', action: :logout # ユーザーログアウト
       end
     end
 
