@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class UsersController < ApplicationController
-  before_action :jwt_authenticate, only: %i[show update destroy logout]
+  before_action :jwt_authenticate, only: %i[show update destroy logout is_login]
 
   # ユーザー登録 API POST /api/users
   def create
@@ -34,6 +34,13 @@ class UsersController < ApplicationController
       render json: { status: 'success', message: 'ログアウトしました' }, status: :ok
     else
       render json: { status: 'error', message: 'ログアウトに失敗しました' }, status: :unauthorized
+  end
+
+  def is_login
+    if @current_user
+      render json: { status: 'success', message: 'ログイン中です' }, status: :ok
+    else
+      render json: { status: 'error', message: 'ログインしていません' }, status: :unauthorized
   end
 
   # ユーザー情報取得 API GET /api/users
