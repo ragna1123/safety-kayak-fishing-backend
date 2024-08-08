@@ -11,6 +11,7 @@ Rails.application.routes.draw do
       collection do
         post 'login', action: :login # ユーザーログイン
         delete 'logout', action: :logout # ユーザーログアウト
+        get 'is_login', action: :is_login # ユーザーログイン状態確認
       end
     end
 
