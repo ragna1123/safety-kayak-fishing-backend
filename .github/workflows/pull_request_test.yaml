@@ -16,6 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2 # リポジトリのコードをチェックアウト
 
+      - name: docker install
+        run: |
+          sudo apt-get update
+          sudo apt-get install docker-compose
+
       # Docker Compose を使ってサービスをデタッチドモードで起動
       - name: Set up Docker Compose
         run: |
