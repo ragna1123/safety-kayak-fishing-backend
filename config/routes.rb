@@ -36,7 +36,7 @@ Rails.application.routes.draw do
     resources :emergency_contacts, only: %i[create index update destroy], controller: 'emergency_contacts'
 
     # フィードバック関連のルーティング
-    resources :feedbacks, only: %i[create], controller: 'feedbacks'
+    resources :feedbacks, only: %i[create index], controller: 'feedbacks'
 
     # line関連のルーティング
     get '/line_auth/callback', to: 'line_auth#callback'
