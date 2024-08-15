@@ -12,6 +12,15 @@ class FeedbacksController < ApplicationController
     end
   end
 
+  def index
+    feedbacks = Feedback.all
+    if feedbacks
+      render json: { status: 'success', feedbacks: feedbacks }, status: :ok
+    else
+      render_error('フィードバックの取得に失敗しました')
+    end
+  end
+
   private
 
   def feedback_params
