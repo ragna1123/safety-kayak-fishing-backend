@@ -80,6 +80,13 @@ jobs:
 
           # Dockerのインストールと設定
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/private_key ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} << 'EOF'
+            # Nginxのインストール
+            if ! [ -x "$(command -v nginx)" ]; then
+              sudo dnf install -y nginx
+              sudo systemctl start nginx
+              sudo systemctl enable nginx
+            fi
+
             if ! [ -x "$(command -v docker)" ]; then
               sudo dnf install -y docker
               sudo systemctl start docker
@@ -107,7 +114,7 @@ jobs:
 
             # certbotでSSL証明書を取得
             if [ -x "$(command -v certbot)" ]; then
-              sudo certbot --nginx -d safety-kayak-fishing.com -d www.safety-kayak-fishing.com
+              sudo certbot --nginx -d safety-kayak.com -d www.safety-kayak.com
             fi
 
             # Docker Compose でのデプロイを実行
