@@ -22,6 +22,7 @@ class UsersController < ApplicationController
       # HTTP Onlyクッキーにトークンを保存
       cookies[:jwt] = { value: token, expires: 1.month.from_now, httponly: true, secure: true}
       render json: { user: }, status: :ok
+
     else
       render json: { status: 'error', message: 'メールアドレスまたはパスワードが正しくありません' }, status: :unauthorized
     end
@@ -37,6 +38,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # ログイン状態確認 API GET /api/check_login
   def check_login
     if @current_user
       render json: { status: 'success', message: 'ログイン中です' }, status: :ok
